@@ -4,11 +4,16 @@ import TopNav from '@/components/layout/TopNav'
 import Footer from '@/components/layout/Footer'
 import FloatingButtons from '@/components/common/FloatingButtons'
 import Providers from '@/components/providers/Providers'
+import { siteConfig } from '@/config/site'
 
-// 网站元数据配置
+// 网站元数据配置（会被系统配置动态更新）
 export const metadata: Metadata = {
-  title: '泽途网',
-  description: '精选优质网站与资讯，为您提供高效的导航服务',
+  title: {
+    default: siteConfig.name,
+    template: `%s | ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
+  keywords: siteConfig.keywords.split(','),
 }
 
 // 根布局组件 - 所有页面共用的布局

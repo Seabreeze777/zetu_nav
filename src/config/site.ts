@@ -1,29 +1,17 @@
-// 网站配置文件
+/**
+ * 网站全局配置
+ * 这些配置会被系统配置管理覆盖（如果数据库中有配置）
+ */
 
 export const siteConfig = {
   name: '泽途网',
   description: '精选优质网站与资讯，为您提供高效的导航服务',
-  url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-  
-  // 联系方式
+  keywords: '网站导航,优质网站,资讯中心,效率工具',
+  url: 'https://zetu.com',
+  ogImage: '/og-image.jpg',
   links: {
-    github: '',
-    email: '',
-  },
-  
-  // 功能开关
-  features: {
-    auth: false,        // 用户认证
-    search: true,       // 搜索功能
-    statistics: true,   // 统计功能
-  },
-  
-  // 分页配置
-  pagination: {
-    defaultPageSize: 20,
-    maxPageSize: 100,
+    github: 'https://github.com/Seabreeze777/zetu_nav',
   },
 }
 
 export type SiteConfig = typeof siteConfig
-

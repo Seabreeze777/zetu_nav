@@ -13,9 +13,25 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useState, useEffect } from 'react'
+
+interface SiteConfig {
+  SITE_NAME: string
+  SITE_DESCRIPTION: string
+  ICP_BEIAN: string
+  FOOTER_TEXT: string
+  CONTACT_EMAIL: string
+}
 
 export default function Footer() {
   const pathname = usePathname()
+  const [config, setConfig] = useState<SiteConfig>({
+    SITE_NAME: '泽途网',
+    SITE_DESCRIPTION: '精选优质网站与资讯，为您提供高效的导航服务',
+    ICP_BEIAN: '宁ICP备2024004974号-1',
+    FOOTER_TEXT: 'Made with ❤️ by Zetu Team',
+    CONTACT_EMAIL: 'contact@zetu.com',
+  })
   
   // 后台页面不显示页脚
   if (pathname.startsWith('/admin')) {
@@ -23,6 +39,24 @@ export default function Footer() {
   }
 
   const currentYear = new Date().getFullYear()
+
+  // 加载系统配置
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const response = await fetch('/api/config')
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success) {
+            setConfig(result.data)
+          }
+        }
+      } catch (error) {
+        console.error('加载配置失败:', error)
+      }
+    }
+    loadConfig()
+  }, [])
 
   return (
     <footer className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-gray-300">
@@ -35,11 +69,11 @@ export default function Footer() {
                 🚀
               </div>
               <span className="text-xl font-bold text-white">
-                泽途网
+                {config.SITE_NAME}
               </span>
             </div>
             <p className="text-sm text-gray-400 leading-relaxed mb-4">
-              精选优质网站与资讯，为您提供高效的导航服务，让信息触手可及。
+              {config.SITE_DESCRIPTION}
             </p>
             <div className="flex items-center gap-2 text-xs text-gray-500">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,7 +162,7 @@ export default function Footer() {
                 <svg className="w-4 h-4 mt-0.5 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                <span>contact@zetu.com</span>
+                <span>{config.CONTACT_EMAIL}</span>
               </li>
               <li>
                 <p className="text-gray-400 mb-2">关注我们</p>
@@ -170,16 +204,16 @@ export default function Footer() {
         <div className="border-t border-white/10 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
             <div className="flex items-center gap-4">
-              <span>© {currentYear} 泽途网</span>
+              <span>© {currentYear} {config.SITE_NAME}</span>
               <span className="hidden md:inline">·</span>
               <span className="hidden md:inline">All Rights Reserved</span>
             </div>
             <div className="flex items-center gap-4">
               <a href="#" className="hover:text-indigo-400 transition-colors">
-                宁ICP备2024004974号-1
+                {config.ICP_BEIAN}
               </a>
               <span>·</span>
-              <span>Made with ❤️ by Zetu Team</span>
+              <span>{config.FOOTER_TEXT}</span>
             </div>
           </div>
         </div>

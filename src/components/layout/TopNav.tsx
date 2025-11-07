@@ -42,8 +42,9 @@ export default function TopNav() {
   
   // 动态菜单
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+  const [siteName, setSiteName] = useState('泽途网')
 
-  // 加载导航菜单
+  // 加载导航菜单和网站配置
   useEffect(() => {
     async function fetchMenus() {
       try {
@@ -61,7 +62,21 @@ export default function TopNav() {
         ])
       }
     }
+    
+    async function fetchConfig() {
+      try {
+        const res = await fetch('/api/config')
+        const data = await res.json()
+        if (data.success && data.data.SITE_NAME) {
+          setSiteName(data.data.SITE_NAME)
+        }
+      } catch (error) {
+        console.error('加载配置失败:', error)
+      }
+    }
+    
     fetchMenus()
+    fetchConfig()
   }, [])
 
 
@@ -123,7 +138,7 @@ export default function TopNav() {
                 🚀
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                泽途网
+                {siteName}
               </span>
             </Link>
 
