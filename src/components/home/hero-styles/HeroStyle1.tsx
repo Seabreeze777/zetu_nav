@@ -55,9 +55,10 @@ const searchEngines = [
 
 interface HeroSectionProps {
   isLoading?: boolean
+  config?: any
 }
 
-export default function HeroSection({ isLoading = false }: HeroSectionProps) {
+export default function HeroSection({ isLoading = false, config }: HeroSectionProps) {
   const [searchValue, setSearchValue] = useState('')
   const [activeEngine, setActiveEngine] = useState('baidu')
 

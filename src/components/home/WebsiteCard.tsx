@@ -66,12 +66,11 @@ export default function WebsiteCard({
     return (
       <div
         onClick={isLoading ? undefined : handleMainClick}
-        className="group cursor-pointer rounded-xl bg-white overflow-hidden
-          shadow-[0_1px_3px_rgba(0,0,0,0.05),0_8px_16px_rgba(0,0,0,0.08)]
-          hover:shadow-[0_4px_6px_rgba(0,0,0,0.07),0_20px_30px_rgba(0,0,0,0.1)]
-          hover:-translate-y-1
-          active:scale-[0.98]
-          transition-all duration-300 ease-out"
+        className="group cursor-pointer rounded-xl overflow-hidden bg-white/50 border border-gray-200
+          hover:bg-white hover:shadow-md hover:border-gray-300
+          hover:-translate-y-0.5
+          active:scale-[0.99]
+          transition-all duration-200 ease-out"
       >
         {/* 大封面图 */}
         <div className="relative w-full aspect-video bg-gradient-to-br from-indigo-50 to-purple-50">
@@ -82,7 +81,7 @@ export default function WebsiteCard({
               src={logo}
               alt={name}
               className="w-full h-full object-cover"
-              type="website"
+              type="banner"
               fallbackText={name}
             />
           )}
@@ -107,12 +106,11 @@ export default function WebsiteCard({
     return (
       <div
         onClick={isLoading ? undefined : handleMainClick}
-        className="group cursor-pointer rounded-xl bg-white p-3 flex flex-col
-          shadow-[0_1px_3px_rgba(0,0,0,0.05),0_8px_16px_rgba(0,0,0,0.08)]
-          hover:shadow-[0_4px_6px_rgba(0,0,0,0.07),0_20px_30px_rgba(0,0,0,0.1)]
-          hover:-translate-y-1
-          active:scale-[0.98]
-          transition-all duration-300 ease-out"
+        className="group cursor-pointer rounded-xl p-3 flex flex-col bg-white/50 border border-gray-200
+          hover:bg-white hover:shadow-md hover:border-gray-300
+          hover:-translate-y-0.5
+          active:scale-[0.99]
+          transition-all duration-200 ease-out"
       >
         {/* Logo 和标题 */}
         <div className="flex items-start gap-2.5 mb-2">
@@ -166,8 +164,8 @@ export default function WebsiteCard({
                 <button
                   key={index}
                   onClick={(e) => handleButtonClick(e, btn.url)}
-                  className="flex-1 min-w-0 px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded 
-                    hover:bg-gray-100 hover:border-gray-300 hover:text-gray-900
+                  className="flex-1 min-w-0 px-2.5 py-1.5 text-xs font-medium text-gray-500 bg-gray-100 rounded 
+                    hover:bg-gray-200 hover:text-gray-700
                     transition-all duration-200 ease-out text-center truncate"
                   title={btn.text}
                 >
@@ -185,12 +183,11 @@ export default function WebsiteCard({
   return (
     <div
       onClick={isLoading ? undefined : handleMainClick}
-      className="group cursor-pointer rounded-xl bg-white p-4 
-        shadow-[0_1px_3px_rgba(0,0,0,0.05),0_8px_16px_rgba(0,0,0,0.08)]
-        hover:shadow-[0_4px_6px_rgba(0,0,0,0.07),0_20px_30px_rgba(0,0,0,0.1)]
-        hover:-translate-y-1
-        active:scale-[0.98]
-        transition-all duration-300 ease-out"
+      className="group cursor-pointer rounded-xl p-4 bg-white/50 border border-gray-200
+        hover:bg-white hover:shadow-md hover:border-gray-300
+        hover:-translate-y-0.5
+        active:scale-[0.99]
+        transition-all duration-200 ease-out"
     >
       {/* Logo 和标题 */}
       <div className="flex items-start gap-3 mb-2">

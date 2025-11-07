@@ -289,6 +289,39 @@ model SystemConfig {
   @@index([category])
 }
 
+// UI界面配置表（Hero样式等前端UI配置）
+model UiSettings {
+  id                    Int      @id @default(autoincrement())
+  heroStyle             String   @default("1") @map("hero_style") @db.VarChar(10)  // Hero样式ID (1-5)
+  showAnnouncementBanner Boolean @default(true) @map("show_announcement_banner")   // 是否显示公告栏
+  heroConfig            String?  @map("hero_config") @db.Text                       // Hero样式配置JSON
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("ui_settings")
+}
+
+// ==================== 公告系统 ====================
+
+// 首页公告
+model Announcement {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(200)       // 公告标题
+  content     String?  @db.Text               // 公告详细内容（可选）
+  link        String?  @db.VarChar(500)       // 点击跳转链接（可选）
+  icon        String   @default("📢") @db.VarChar(10) // emoji图标
+  sortOrder   Int      @default(0) @map("sort_order")   // 排序（越小越靠前）
+  isActive    Boolean  @default(true) @map("is_active") // 是否启用
+  startTime   DateTime? @map("start_time")     // 开始显示时间（可选）
+  endTime     DateTime? @map("end_time")       // 结束显示时间（可选）
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("announcements")
+  @@index([isActive, sortOrder])
+  @@index([startTime, endTime])
+}
+
 // 顶部导航菜单
 model NavigationMenu {
   id           Int               @id @default(autoincrement())

@@ -53,8 +53,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       name: '界面配置',
       icon: '🎨',
       items: [
+        { name: 'UI配置', icon: '🎨', href: '/admin/ui-settings' },
         { name: '导航菜单', icon: '📋', href: '/admin/navigation-menus' },
         { name: '悬浮按钮', icon: '🎯', href: '/admin/floating-buttons' },
+        { name: '公告管理', icon: '📢', href: '/admin/announcements' },
       ]
     },
     {

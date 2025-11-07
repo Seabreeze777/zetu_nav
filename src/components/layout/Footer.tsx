@@ -59,20 +59,20 @@ export default function Footer() {
   }, [])
 
   return (
-    <footer className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-gray-300">
+    <footer className="bg-gray-100 border-t border-gray-200">
       <div className="container mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* 关于我们 */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-xl shadow-lg">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-purple-600 text-xl shadow-lg">
                 🚀
               </div>
-              <span className="text-xl font-bold text-white">
+              <span className="text-xl font-bold text-gray-900">
                 {config.SITE_NAME}
               </span>
             </div>
-            <p className="text-sm text-gray-400 leading-relaxed mb-4">
+            <p className="text-sm text-gray-600 leading-relaxed mb-4">
               {config.SITE_DESCRIPTION}
             </p>
             <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -85,32 +85,32 @@ export default function Footer() {
 
           {/* 快速导航 */}
           <div>
-            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-              <span className="text-indigo-400">▸</span>
+            <h3 className="text-gray-900 font-semibold mb-4 flex items-center gap-2">
+              <span className="text-indigo-500">▸</span>
               快速导航
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/" className="text-sm hover:text-indigo-400 transition-colors flex items-center gap-2 group">
-                  <span className="text-indigo-400/0 group-hover:text-indigo-400/100 transition-colors">›</span>
+                <Link href="/" className="text-sm text-gray-600 hover:text-indigo-600 transition-colors duration-200 flex items-center gap-2 group">
+                  <span className="text-indigo-600/0 group-hover:text-indigo-600/100 transition-colors">›</span>
                   首页
                 </Link>
               </li>
               <li>
-                <Link href="/articles" className="text-sm hover:text-indigo-400 transition-colors flex items-center gap-2 group">
-                  <span className="text-indigo-400/0 group-hover:text-indigo-400/100 transition-colors">›</span>
+                <Link href="/articles" className="text-sm text-gray-600 hover:text-indigo-600 transition-colors duration-200 flex items-center gap-2 group">
+                  <span className="text-indigo-600/0 group-hover:text-indigo-600/100 transition-colors">›</span>
                   资讯中心
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="text-sm hover:text-indigo-400 transition-colors flex items-center gap-2 group">
-                  <span className="text-indigo-400/0 group-hover:text-indigo-400/100 transition-colors">›</span>
+                <Link href="/about" className="text-sm text-gray-600 hover:text-indigo-600 transition-colors duration-200 flex items-center gap-2 group">
+                  <span className="text-indigo-600/0 group-hover:text-indigo-600/100 transition-colors">›</span>
                   关于我们
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-sm hover:text-indigo-400 transition-colors flex items-center gap-2 group">
-                  <span className="text-indigo-400/0 group-hover:text-indigo-400/100 transition-colors">›</span>
+                <Link href="/contact" className="text-sm text-gray-600 hover:text-indigo-600 transition-colors duration-200 flex items-center gap-2 group">
+                  <span className="text-indigo-600/0 group-hover:text-indigo-600/100 transition-colors">›</span>
                   联系我们
                 </Link>
               </li>
@@ -119,32 +119,32 @@ export default function Footer() {
 
           {/* 相关链接 */}
           <div>
-            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-              <span className="text-purple-400">▸</span>
+            <h3 className="text-gray-900 font-semibold mb-4 flex items-center gap-2">
+              <span className="text-purple-500">▸</span>
               相关链接
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/privacy" className="text-sm hover:text-purple-400 transition-colors flex items-center gap-2 group">
-                  <span className="text-purple-400/0 group-hover:text-purple-400/100 transition-colors">›</span>
+                <Link href="/privacy" className="text-sm text-gray-600 hover:text-purple-600 transition-colors duration-200 flex items-center gap-2 group">
+                  <span className="text-purple-600/0 group-hover:text-purple-600/100 transition-colors">›</span>
                   隐私政策
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="text-sm hover:text-purple-400 transition-colors flex items-center gap-2 group">
-                  <span className="text-purple-400/0 group-hover:text-purple-400/100 transition-colors">›</span>
+                <Link href="/terms" className="text-sm text-gray-600 hover:text-purple-600 transition-colors duration-200 flex items-center gap-2 group">
+                  <span className="text-purple-600/0 group-hover:text-purple-600/100 transition-colors">›</span>
                   服务条款
                 </Link>
               </li>
               <li>
-                <Link href="/sitemap" className="text-sm hover:text-purple-400 transition-colors flex items-center gap-2 group">
-                  <span className="text-purple-400/0 group-hover:text-purple-400/100 transition-colors">›</span>
+                <Link href="/sitemap" className="text-sm text-gray-600 hover:text-purple-600 transition-colors duration-200 flex items-center gap-2 group">
+                  <span className="text-purple-600/0 group-hover:text-purple-600/100 transition-colors">›</span>
                   网站地图
                 </Link>
               </li>
               <li>
-                <Link href="/feedback" className="text-sm hover:text-purple-400 transition-colors flex items-center gap-2 group">
-                  <span className="text-purple-400/0 group-hover:text-purple-400/100 transition-colors">›</span>
+                <Link href="/feedback" className="text-sm text-gray-600 hover:text-purple-600 transition-colors duration-200 flex items-center gap-2 group">
+                  <span className="text-purple-600/0 group-hover:text-purple-600/100 transition-colors">›</span>
                   意见反馈
                 </Link>
               </li>
@@ -153,23 +153,23 @@ export default function Footer() {
 
           {/* 联系方式 */}
           <div>
-            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-              <span className="text-pink-400">▸</span>
+            <h3 className="text-gray-900 font-semibold mb-4 flex items-center gap-2">
+              <span className="text-pink-500">▸</span>
               联系方式
             </h3>
             <ul className="space-y-3 text-sm">
-              <li className="flex items-start gap-2">
-                <svg className="w-4 h-4 mt-0.5 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <li className="flex items-start gap-2 text-gray-600">
+                <svg className="w-4 h-4 mt-0.5 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 <span>{config.CONTACT_EMAIL}</span>
               </li>
               <li>
-                <p className="text-gray-400 mb-2">关注我们</p>
+                <p className="text-gray-600 mb-2">关注我们</p>
                 <div className="flex items-center gap-2">
                   <a
                     href="#"
-                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-gray-400 transition-all hover:bg-indigo-500 hover:border-indigo-500 hover:text-white"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-200 text-gray-600 transition-all duration-200 hover:bg-indigo-500 hover:text-white hover:scale-110"
                     title="GitHub"
                   >
                     <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -178,7 +178,7 @@ export default function Footer() {
                   </a>
                   <a
                     href="#"
-                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-gray-400 transition-all hover:bg-blue-500 hover:border-blue-500 hover:text-white"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-200 text-gray-600 transition-all duration-200 hover:bg-blue-500 hover:text-white hover:scale-110"
                     title="Twitter"
                   >
                     <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -187,7 +187,7 @@ export default function Footer() {
                   </a>
                   <a
                     href="#"
-                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-gray-400 transition-all hover:bg-green-500 hover:border-green-500 hover:text-white"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-200 text-gray-600 transition-all duration-200 hover:bg-green-500 hover:text-white hover:scale-110"
                     title="微信"
                   >
                     <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -201,15 +201,15 @@ export default function Footer() {
         </div>
 
         {/* 底部分割线 */}
-        <div className="border-t border-white/10 pt-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
+        <div className="border-t border-gray-200 pt-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
             <div className="flex items-center gap-4">
               <span>© {currentYear} {config.SITE_NAME}</span>
               <span className="hidden md:inline">·</span>
               <span className="hidden md:inline">All Rights Reserved</span>
             </div>
             <div className="flex items-center gap-4">
-              <a href="#" className="hover:text-indigo-400 transition-colors">
+              <a href="#" className="hover:text-indigo-600 transition-colors duration-200">
                 {config.ICP_BEIAN}
               </a>
               <span>·</span>

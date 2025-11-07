@@ -156,7 +156,8 @@ export default function TopNav() {
                     href={menu.href}
                     target={menu.openInNewTab ? '_blank' : undefined}
                     rel={menu.openInNewTab ? 'noopener noreferrer' : undefined}
-                    className="flex items-center gap-1.5 px-4 py-2.5 text-base font-medium text-gray-700 rounded-lg transition-all hover:bg-gray-100 hover:text-indigo-600"
+                    className="flex items-center gap-1.5 px-4 py-2.5 text-base font-medium text-gray-700 rounded-lg transition-all duration-200
+                      hover:bg-gray-100 hover:text-indigo-600 hover:scale-105 active:scale-100"
                   >
                     {menu.icon && <span>{menu.icon}</span>}
                     {menu.name}
@@ -184,7 +185,8 @@ export default function TopNav() {
                               href={item.href}
                               target={item.openInNewTab ? '_blank' : undefined}
                               rel={item.openInNewTab ? 'noopener noreferrer' : undefined}
-                              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 rounded-lg transition-all hover:bg-indigo-50 hover:text-indigo-600"
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 rounded-lg transition-all duration-200
+                                hover:bg-indigo-50 hover:text-indigo-600 hover:translate-x-1"
                             >
                               <span className="h-1.5 w-1.5 rounded-full bg-indigo-400"></span>
                               {item.name}
@@ -310,7 +312,8 @@ export default function TopNav() {
               /* 未登录：显示登录按钮 */
               <Link
                 href="/login"
-                className="hidden sm:flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition-all hover:border-blue-300 hover:bg-blue-100"
+                className="hidden sm:flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition-all duration-200
+                  hover:border-blue-300 hover:bg-blue-100 hover:scale-105 active:scale-100 shadow-sm hover:shadow-md"
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path

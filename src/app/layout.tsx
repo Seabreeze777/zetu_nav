@@ -31,7 +31,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN">
-      <body className="flex min-h-screen flex-col">
+      <head>
+        {/* Google Font - Inter (专业现代字体) */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link 
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" 
+          rel="stylesheet" 
+        />
+      </head>
+      <body className="flex min-h-screen flex-col bg-gray-100 font-sans antialiased" style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
         <Providers>
           {/* 全局进度条 */}
           <NProgressBar />
