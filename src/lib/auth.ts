@@ -1,7 +1,12 @@
 import jwt from 'jsonwebtoken'
 import { cookies } from 'next/headers'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'zetu-nav-secret-key-2025'
+// 强制要求JWT_SECRET环境变量，禁止使用默认值
+const JWT_SECRET = process.env.JWT_SECRET
+if (!JWT_SECRET) {
+  throw new Error('❌ JWT_SECRET环境变量未设置！请在.env文件中配置JWT_SECRET')
+}
+
 const TOKEN_NAME = 'admin_token'
 
 export interface JWTPayload {

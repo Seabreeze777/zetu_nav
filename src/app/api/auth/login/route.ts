@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { generateToken, setAuthCookie } from '@/lib/auth'
+import { logLogin } from '@/lib/audit-log'
 
 /**
  * POST /api/auth/login
@@ -77,6 +78,9 @@ export async function POST(request: Request) {
       where: { id: user.id },
       data: { lastLoginAt: new Date() },
     })
+
+    // 记录登录日志
+    await logLogin(request, user.id, user.username)
 
     return NextResponse.json({
       success: true,

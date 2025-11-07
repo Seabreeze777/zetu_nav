@@ -30,8 +30,10 @@ export default function HeroSection() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('搜索：', searchValue)
-    // TODO: 实现搜索功能
+    // 跳转到搜索页面
+    if (searchValue.trim()) {
+      window.location.href = `/search?q=${encodeURIComponent(searchValue)}`
+    }
   }
 
   return (

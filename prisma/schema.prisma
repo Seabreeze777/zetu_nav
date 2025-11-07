@@ -167,6 +167,7 @@ model User {
   articleFavorites ArticleFavorite[]
   uploadedMedia    Media[]
   mediaFolders     MediaFolder[]
+  auditLogs        AuditLog[]
 
   @@map("users")
 }
@@ -307,5 +308,29 @@ model NavigationMenu {
   @@map("navigation_menus")
   @@index([parentId])
   @@index([sortOrder])
+}
+
+// ==================== 操作日志系统 ====================
+
+// 操作日志表（审计日志）
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")                      // 操作人ID
+  action     String   @db.VarChar(20)                      // 操作类型：CREATE, UPDATE, DELETE, LOGIN, LOGOUT
+  module     String   @db.VarChar(50)                      // 模块：Website, Article, User, Category等
+  targetId   Int?     @map("target_id")                    // 操作对象ID（如果适用）
+  targetName String?  @map("target_name") @db.VarChar(200) // 操作对象名称（便于查看）
+  changes    Json?                                         // 修改内容（前后对比JSON）
+  ip         String?  @db.VarChar(45)                      // IP地址（支持IPv6）
+  userAgent  String?  @map("user_agent") @db.VarChar(500)  // 浏览器信息
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+  @@index([userId])
+  @@index([module])
+  @@index([action])
+  @@index([createdAt])
 }
 

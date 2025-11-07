@@ -5,6 +5,12 @@ import Footer from '@/components/layout/Footer'
 import FloatingButtons from '@/components/common/FloatingButtons'
 import Providers from '@/components/providers/Providers'
 import { siteConfig } from '@/config/site'
+import { checkEnv } from '@/lib/check-env'
+
+// 在应用启动时检查环境变量（仅在服务端执行一次）
+if (typeof window === 'undefined') {
+  checkEnv()
+}
 
 // 网站元数据配置（会被系统配置动态更新）
 export const metadata: Metadata = {
