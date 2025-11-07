@@ -1,0 +1,311 @@
+// Prisma Schema - 择图导航网站数据库设计
+// 生成时间: 2025-11-05
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== 导航系统 ====================
+
+// 导航分类表（热门推荐、常用工具等）
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(50)        // 分类名称
+  slug        String    @unique @db.VarChar(50) // URL标识（hot, tools等）
+  icon        String    @db.VarChar(50)        // emoji图标 🔥
+  description String?   @db.VarChar(200)       // 分类描述
+  sortOrder   Int       @default(0)            // 排序（越小越靠前）
+  cardsPerRow Int       @default(6) @map("cards_per_row") // 每行显示几个卡片 (4/5/6)
+  displayMode String    @default("compact") @map("display_mode") @db.VarChar(20) // 显示模式：large(大图)/button(按钮)/compact(紧凑)
+  isActive    Boolean   @default(true) @map("is_active")  // 是否启用
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  websites    Website[]
+
+  @@map("categories")
+  @@index([sortOrder])
+}
+
+// 导航网站表
+model Website {
+  id            Int      @id @default(autoincrement())
+  categoryId    Int      @map("category_id")
+  name          String   @db.VarChar(100)       // 网站名称
+  description   String?  @db.VarChar(500)       // 网站描述
+  url           String   @db.VarChar(500)       // 网站链接
+  logoUrl       String?  @map("logo_url") @db.VarChar(500) // Logo图片URL（COS）
+  actionButtons Json?    @map("action_buttons") // 扩展按钮配置 [{text: "公司介绍", url: "/about"}, ...]
+  sortOrder     Int      @default(0)            // 排序
+  clickCount    Int      @default(0) @map("click_count")   // 点击次数
+  isActive      Boolean  @default(true) @map("is_active")  // 是否显示
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  tags        WebsiteTag[]
+  favorites   WebsiteFavorite[]
+
+  @@map("websites")
+  @@index([categoryId])
+  @@index([sortOrder])
+  @@index([clickCount])
+}
+
+// ==================== 文章系统 ====================
+
+// 文章分类表（前端开发、后端开发等）
+model ArticleCategory {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(50)        // 分类名称
+  slug        String    @unique @db.VarChar(50) // URL标识
+  icon        String    @db.VarChar(50)        // emoji图标
+  description String?   @db.VarChar(200)       // 分类描述
+  sortOrder   Int       @default(0)            // 排序
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  articles    Article[]
+
+  @@map("article_categories")
+  @@index([sortOrder])
+}
+
+// 文章表
+model Article {
+  id          Int      @id @default(autoincrement())
+  categoryId  Int      @map("category_id")
+  title       String   @db.VarChar(200)       // 文章标题
+  slug        String   @unique @db.VarChar(200) // URL标识
+  description String?  @db.VarChar(500)       // 文章简介
+  content     String   @db.Text               // 文章内容（Markdown）
+  coverImage  String?  @map("cover_image") @db.VarChar(500) // 封面图URL（COS）
+  author      String   @default("管理员") @db.VarChar(50)
+  views       Int      @default(0)            // 浏览次数
+  readTime    Int      @default(5) @map("read_time") // 阅读时长（分钟）
+  isFeatured  Boolean  @default(false) @map("is_featured") // 是否精选
+  isPublished Boolean  @default(true) @map("is_published")  // 是否发布
+  publishedAt DateTime? @map("published_at")  // 发布时间
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  category    ArticleCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  tags        ArticleTag[]
+  favorites   ArticleFavorite[]
+
+  @@map("articles")
+  @@index([categoryId])
+  @@index([views])
+  @@index([publishedAt])
+  @@index([isFeatured])
+}
+
+// ==================== 标签系统 ====================
+
+// 标签表（React、Vue、TypeScript等）
+model Tag {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(50)  // 标签名称
+  slug        String   @unique @db.VarChar(50)  // URL标识
+  color       String   @default("#3B82F6") @db.VarChar(20) // 标签颜色
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  websites    WebsiteTag[]
+  articles    ArticleTag[]
+
+  @@map("tags")
+}
+
+// 网站-标签关联表（多对多）
+model WebsiteTag {
+  websiteId Int @map("website_id")
+  tagId     Int @map("tag_id")
+  
+  website   Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([websiteId, tagId])
+  @@map("website_tags")
+}
+
+// 文章-标签关联表（多对多）
+model ArticleTag {
+  articleId Int @map("article_id")
+  tagId     Int @map("tag_id")
+  
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+  @@map("article_tags")
+}
+
+// ==================== 用户系统 ====================
+
+// 用户表（后台管理员）
+model User {
+  id          Int      @id @default(autoincrement())
+  username    String   @unique @db.VarChar(50)   // 用户名
+  password    String   @db.VarChar(255)          // 密码（加密存储）
+  email       String?  @unique @db.VarChar(100)  // 邮箱
+  nickname    String?  @db.VarChar(50)           // 昵称
+  avatar      String?  @db.VarChar(500)          // 头像URL（COS）
+  role        String   @default("admin") @db.VarChar(20) // 角色（admin/editor等）
+  isActive    Boolean  @default(true) @map("is_active")
+  lastLoginAt DateTime? @map("last_login_at")    // 最后登录时间
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  websiteFavorites WebsiteFavorite[]
+  articleFavorites ArticleFavorite[]
+  uploadedMedia    Media[]
+  mediaFolders     MediaFolder[]
+
+  @@map("users")
+}
+
+// ==================== 媒体库系统 ====================
+
+// 媒体文件夹表
+model MediaFolder {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(100)       // 文件夹名称（唯一）
+  description String?  @db.VarChar(500)               // 文件夹描述
+  sortOrder   Int      @default(0)                    // 排序
+  createdBy   Int      @map("created_by")             // 创建者ID
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  creator     User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@map("media_folders")
+  @@index([sortOrder])
+}
+
+// 媒体文件表（图片、视频等）
+model Media {
+  id           Int      @id @default(autoincrement())
+  fileName     String   @map("file_name") @db.VarChar(255)      // 存储的文件名
+  originalName String   @map("original_name") @db.VarChar(255)  // 原始文件名
+  fileSize     Int      @map("file_size")                       // 文件大小（字节）
+  mimeType     String   @map("mime_type") @db.VarChar(100)      // MIME类型
+  width        Int?                                             // 图片宽度
+  height       Int?                                             // 图片高度
+  url          String   @db.VarChar(500)                        // 完整访问URL
+  cosKey       String   @map("cos_key") @db.VarChar(500)        // COS对象键
+  bucket       String   @db.VarChar(100)                        // COS存储桶
+  folder       String?  @db.VarChar(200)                        // 文件夹分类（websites/articles/avatars等）
+  uploadedBy   Int      @map("uploaded_by")                     // 上传者ID
+  usedCount    Int      @default(0) @map("used_count")          // 被引用次数
+  tags         String?  @db.Text                                // 标签（JSON数组）
+  description  String?  @db.VarChar(500)                        // 文件描述
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  uploader     User     @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+
+  @@map("media")
+  @@index([uploadedBy])
+  @@index([mimeType])
+  @@index([folder])
+  @@index([createdAt])
+}
+
+// ==================== 收藏系统 ====================
+
+// 网站收藏表
+model WebsiteFavorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  websiteId Int      @map("website_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  website Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, websiteId])
+  @@map("website_favorites")
+  @@index([userId])
+  @@index([websiteId])
+}
+
+// 文章收藏表
+model ArticleFavorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  articleId Int      @map("article_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, articleId])
+  @@map("article_favorites")
+  @@index([userId])
+  @@index([articleId])
+}
+
+// ==================== 全局配置 ====================
+
+// 全局悬浮按钮
+model FloatingButton {
+  id        Int      @id @default(autoincrement())
+  icon      String   @db.VarChar(10)        // 图标 emoji 或图标名称
+  label     String   @db.VarChar(50)        // 按钮标签
+  url       String   @db.VarChar(500)       // 跳转链接
+  sortOrder Int      @default(0) @map("sort_order") // 排序
+  isActive  Boolean  @default(true) @map("is_active") // 是否启用
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("floating_buttons")
+  @@index([sortOrder])
+}
+
+// 系统配置表（COS、邮件等可在后台管理的配置）
+model SystemConfig {
+  id          Int      @id @default(autoincrement())
+  category    String   @db.VarChar(50)        // 配置分类：cos, site, email等
+  key         String   @db.VarChar(100)       // 配置键名
+  value       String   @db.Text               // 配置值
+  label       String   @db.VarChar(100)       // 显示标签
+  description String?  @db.VarChar(500)       // 配置说明
+  type        String   @default("text") @db.VarChar(20) // 输入类型：text, password, number, textarea
+  isSecret    Boolean  @default(false) @map("is_secret") // 是否敏感信息
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([category, key])
+  @@map("system_configs")
+  @@index([category])
+}
+
+// 顶部导航菜单
+model NavigationMenu {
+  id           Int               @id @default(autoincrement())
+  name         String            @db.VarChar(50)        // 菜单名称
+  href         String            @db.VarChar(500)       // 跳转链接
+  icon         String?           @db.VarChar(50)        // 图标 emoji（可选）
+  parentId     Int?              @map("parent_id")      // 父菜单ID（null表示顶级菜单）
+  sortOrder    Int               @default(0) @map("sort_order") // 排序
+  isActive     Boolean           @default(true) @map("is_active") // 是否启用
+  openInNewTab Boolean           @default(false) @map("open_in_new_tab") // 是否新窗口打开
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  parent       NavigationMenu?   @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children     NavigationMenu[]  @relation("MenuHierarchy")
+
+  @@map("navigation_menus")
+  @@index([parentId])
+  @@index([sortOrder])
+}
+

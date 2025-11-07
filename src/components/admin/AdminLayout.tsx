@@ -1,0 +1,186 @@
+'use client'
+
+import { useState } from 'react'
+import { usePathname } from 'next/navigation'
+import Link from 'next/link'
+import { useAdmin } from '@/contexts/AdminContext'
+
+interface AdminLayoutProps {
+  children: React.ReactNode
+}
+
+export default function AdminLayout({ children }: AdminLayoutProps) {
+  const pathname = usePathname()
+  const { user, loading, logout } = useAdmin()
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
+  const menuItems = [
+    { name: '仪表盘', icon: '📊', href: '/admin', exact: true },
+    { name: '网站管理', icon: '🌐', href: '/admin/websites' },
+    { name: '文章管理', icon: '📝', href: '/admin/articles' },
+    { name: '分类管理', icon: '📂', href: '/admin/categories' },
+    { name: '标签管理', icon: '🏷️', href: '/admin/tags' },
+    { name: '媒体库', icon: '📷', href: '/admin/media' },
+    { name: '导航菜单', icon: '📋', href: '/admin/navigation-menus' },
+    { name: '悬浮按钮', icon: '🎯', href: '/admin/floating-buttons' },
+    { name: '用户管理', icon: '👥', href: '/admin/users' },
+    { name: '系统配置', icon: '⚙️', href: '/admin/system-config' },
+  ]
+
+  const isActive = (href: string, exact = false) => {
+    if (exact) {
+      return pathname === href
+    }
+    return pathname.startsWith(href)
+  }
+
+  // 只在真正需要时显示加载界面
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">加载中...</p>
+        </div>
+      </div>
+    )
+  }
+  
+  if (!user) {
+    return null
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      {/* 侧边栏 */}
+      <aside className={`fixed left-0 top-0 bottom-0 w-64 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 z-30 transition-transform lg:translate-x-0 ${
+        sidebarCollapsed ? '-translate-x-full' : 'translate-x-0'
+      } shadow-2xl`}>
+        {/* Logo 区域 */}
+        <div className="h-16 flex items-center px-6 border-b border-white/10">
+          <Link href="/admin" className="flex items-center gap-3 group">
+            <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+              <span className="text-white text-xl">⚡</span>
+            </div>
+            <div>
+              <span className="font-bold text-white text-base">泽途网</span>
+              <p className="text-xs text-gray-400">管理后台</p>
+            </div>
+          </Link>
+        </div>
+
+        {/* 导航菜单 */}
+        <nav className="p-3 mt-2">
+          {menuItems.map((item) => {
+            const active = isActive(item.href, item.exact)
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`group relative flex items-center gap-3 px-4 py-3 mb-1 rounded-lg transition-all duration-200 ${
+                  active
+                    ? 'bg-gradient-to-r from-indigo-500/20 to-purple-500/20 text-white shadow-lg'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                {/* 激活指示器 */}
+                {active && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-indigo-400 to-purple-500 rounded-r-full" />
+                )}
+                
+                <span className={`text-xl transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-105'}`}>
+                  {item.icon}
+                </span>
+                <span className={`font-medium ${active ? 'font-semibold' : ''}`}>
+                  {item.name}
+                </span>
+                
+                {/* 激活箭头 */}
+                {active && (
+                  <svg className="w-4 h-4 ml-auto text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
+                )}
+              </Link>
+            )
+          })}
+        </nav>
+
+        {/* 底部用户区域 */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-black/20">
+          <div className="flex items-center gap-3 px-3 py-2">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold shadow-lg">
+              {(user?.nickname || user?.username || 'A').charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white truncate">{user?.nickname || user?.username}</p>
+              <p className="text-xs text-gray-400">{user?.role === 'admin' ? '👑 管理员' : '📝 编辑'}</p>
+            </div>
+            <button
+              onClick={logout}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              title="退出登录"
+            >
+              <svg className="w-5 h-5 text-gray-400 hover:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* 顶部导航栏 */}
+      <header className="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-sm border-b border-gray-200 z-20 lg:left-64">
+        <div className="h-full px-6 flex items-center justify-between">
+          {/* 移动端菜单按钮 */}
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
+          >
+            <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          {/* 面包屑或标题 */}
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span className="font-medium text-gray-900">
+              {menuItems.find(item => isActive(item.href, item.exact))?.name || '管理面板'}
+            </span>
+          </div>
+
+          {/* 右侧操作区 */}
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              target="_blank"
+              className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              <span>前台网站</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* 主内容区 */}
+      <main className="lg:ml-64 pt-16 min-h-screen">
+        {children}
+      </main>
+
+      {/* 移动端侧边栏遮罩 */}
+      {!sidebarCollapsed && (
+        <div
+          className="fixed inset-0 bg-black/60 z-20 lg:hidden backdrop-blur-sm"
+          onClick={() => setSidebarCollapsed(true)}
+        />
+      )}
+    </div>
+  )
+}
+
