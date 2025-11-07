@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
+import { logCreate } from '@/lib/audit-log'
 
 /**
  * POST /api/admin/articles
@@ -96,6 +97,18 @@ export async function POST(request: Request) {
         },
       },
     })
+
+    // 记录操作日志
+    try {
+      await logCreate(request, currentUser.userId, 'Article', article.id, title, {
+        title,
+        slug,
+        categoryId,
+        isPublished,
+      })
+    } catch (error) {
+      console.error('记录操作日志失败:', error)
+    }
 
     return NextResponse.json({
       success: true,

@@ -399,7 +399,7 @@ export default function MediaLibraryPage() {
 
   return (
     <AdminLayout>
-      <div className="p-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-7xl mx-auto">
         {/* 头部 */}
         <div className="flex items-center justify-between mb-6">

@@ -115,6 +115,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
 
   return (
     <AdminLayout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-2">编辑用户</h1>
         <p className="text-gray-600">修改用户信息和权限</p>
@@ -253,6 +254,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
             </button>
           </div>
         </form>
+      </div>
       </div>
     </AdminLayout>
   );

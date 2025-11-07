@@ -85,12 +85,13 @@ export default function DashboardPage() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* 页面标题 */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">数据概览</h1>
-          <p className="mt-2 text-sm text-gray-600">系统统计数据和运营情况一览</p>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-6">
+          {/* 页面标题 */}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">数据概览</h1>
+            <p className="mt-2 text-sm text-gray-600">系统统计数据和运营情况一览</p>
+          </div>
 
         {/* 核心指标卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -284,6 +285,7 @@ export default function DashboardPage() {
             ))}
           </div>
         </div>
+      </div>
       </div>
     </AdminLayout>
   )

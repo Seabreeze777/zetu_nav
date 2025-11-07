@@ -9,31 +9,97 @@ interface AdminLayoutProps {
   children: React.ReactNode
 }
 
+interface MenuItem {
+  name: string
+  icon: string
+  href: string
+  exact?: boolean
+}
+
+interface MenuGroup {
+  name: string
+  icon: string
+  items: MenuItem[]
+}
+
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname()
   const { user, loading, logout } = useAdmin()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-
-  const menuItems = [
-    { name: '仪表盘', icon: '📊', href: '/admin', exact: true },
-    { name: '监控面板', icon: '📈', href: '/admin/dashboard' },
-    { name: '操作日志', icon: '📜', href: '/admin/logs' },
-    { name: '网站管理', icon: '🌐', href: '/admin/websites' },
-    { name: '文章管理', icon: '📝', href: '/admin/articles' },
-    { name: '分类管理', icon: '📂', href: '/admin/categories' },
-    { name: '标签管理', icon: '🏷️', href: '/admin/tags' },
-    { name: '媒体库', icon: '📷', href: '/admin/media' },
-    { name: '导航菜单', icon: '📋', href: '/admin/navigation-menus' },
-    { name: '悬浮按钮', icon: '🎯', href: '/admin/floating-buttons' },
-    { name: '用户管理', icon: '👥', href: '/admin/users' },
-    { name: '系统配置', icon: '⚙️', href: '/admin/system-config' },
+  
+  // 菜单分组配置
+  const menuGroups: MenuGroup[] = [
+    {
+      name: '数据分析',
+      icon: '📊',
+      items: [
+        { name: '仪表盘', icon: '📊', href: '/admin', exact: true },
+        { name: '监控面板', icon: '📈', href: '/admin/dashboard' },
+        { name: '操作日志', icon: '📜', href: '/admin/logs' },
+      ]
+    },
+    {
+      name: '内容管理',
+      icon: '📝',
+      items: [
+        { name: '网站管理', icon: '🌐', href: '/admin/websites' },
+        { name: '文章管理', icon: '📝', href: '/admin/articles' },
+        { name: '分类管理', icon: '📂', href: '/admin/categories' },
+        { name: '标签管理', icon: '🏷️', href: '/admin/tags' },
+        { name: '媒体库', icon: '📷', href: '/admin/media' },
+      ]
+    },
+    {
+      name: '界面配置',
+      icon: '🎨',
+      items: [
+        { name: '导航菜单', icon: '📋', href: '/admin/navigation-menus' },
+        { name: '悬浮按钮', icon: '🎯', href: '/admin/floating-buttons' },
+      ]
+    },
+    {
+      name: '系统设置',
+      icon: '⚙️',
+      items: [
+        { name: '用户管理', icon: '👥', href: '/admin/users' },
+        { name: '系统配置', icon: '⚙️', href: '/admin/system-config' },
+      ]
+    }
   ]
 
+  // 判断路由是否激活
   const isActive = (href: string, exact = false) => {
     if (exact) {
       return pathname === href
     }
     return pathname.startsWith(href)
+  }
+
+  // 判断分组是否有激活的子项
+  const isGroupActive = (group: MenuGroup) => {
+    return group.items.some(item => isActive(item.href, item.exact))
+  }
+
+  // 状态：展开的分组
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(() => {
+    // 默认展开包含当前激活路由的分组
+    const activeGroups = menuGroups.filter(group => isGroupActive(group))
+    
+    // 如果有激活的分组，展开它
+    if (activeGroups.length > 0) {
+      return [activeGroups[0].name]
+    }
+    
+    // 如果没有激活的分组（首次进入后台），默认展开第一个分组（数据分析）
+    return menuGroups.length > 0 ? [menuGroups[0].name] : []
+  })
+
+  const toggleGroup = (groupName: string) => {
+    setExpandedGroups(prev => 
+      prev.includes(groupName)
+        ? prev.filter(name => name !== groupName)
+        : [groupName]  // 手风琴效果：只保留当前展开的分组
+    )
   }
 
   // 只在真正需要时显示加载界面
@@ -72,38 +138,76 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
 
         {/* 导航菜单 */}
-        <nav className="p-3 mt-2">
-          {menuItems.map((item) => {
-            const active = isActive(item.href, item.exact)
+        <nav className="p-3 mt-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 180px)' }}>
+          {menuGroups.map((group) => {
+            const groupActive = isGroupActive(group)
+            const isExpanded = expandedGroups.includes(group.name)
+            
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`group relative flex items-center gap-3 px-4 py-3 mb-1 rounded-lg transition-all duration-200 ${
-                  active
-                    ? 'bg-gradient-to-r from-indigo-500/20 to-purple-500/20 text-white shadow-lg'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                {/* 激活指示器 */}
-                {active && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-indigo-400 to-purple-500 rounded-r-full" />
-                )}
-                
-                <span className={`text-xl transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-105'}`}>
-                  {item.icon}
-                </span>
-                <span className={`font-medium ${active ? 'font-semibold' : ''}`}>
-                  {item.name}
-                </span>
-                
-                {/* 激活箭头 */}
-                {active && (
-                  <svg className="w-4 h-4 ml-auto text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              <div key={group.name} className="mb-2">
+                {/* 分组标题 */}
+                <button
+                  onClick={() => toggleGroup(group.name)}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 ${
+                    groupActive
+                      ? 'bg-white/10 text-white'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <span className="text-lg">{group.icon}</span>
+                  <span className="flex-1 text-left text-sm font-semibold">{group.name}</span>
+                  {/* 展开/收起箭头 */}
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      isExpanded ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
+                </button>
+
+                {/* 子菜单项 */}
+                {isExpanded && (
+                  <div className="mt-1 ml-4 space-y-0.5">
+                    {group.items.map((item) => {
+                      const active = isActive(item.href, item.exact)
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 ${
+                            active
+                              ? 'bg-gradient-to-r from-indigo-500/20 to-purple-500/20 text-white shadow-lg'
+                              : 'text-gray-400 hover:text-white hover:bg-white/5'
+                          }`}
+                        >
+                          {/* 激活指示器 */}
+                          {active && (
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-indigo-400 to-purple-500 rounded-r-full" />
+                          )}
+                          
+                          <span className={`text-base transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-105'}`}>
+                            {item.icon}
+                          </span>
+                          <span className={`text-sm ${active ? 'font-semibold' : 'font-medium'}`}>
+                            {item.name}
+                          </span>
+                          
+                          {/* 激活箭头 */}
+                          {active && (
+                            <svg className="w-3.5 h-3.5 ml-auto text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                            </svg>
+                          )}
+                        </Link>
+                      )
+                    })}
+                  </div>
                 )}
-              </Link>
+              </div>
             )
           })}
         </nav>
@@ -150,7 +254,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
             <span className="font-medium text-gray-900">
-              {menuItems.find(item => isActive(item.href, item.exact))?.name || '管理面板'}
+              {(() => {
+                // 找到当前激活的菜单项
+                for (const group of menuGroups) {
+                  const activeItem = group.items.find(item => isActive(item.href, item.exact))
+                  if (activeItem) {
+                    return activeItem.name
+                  }
+                }
+                return '管理面板'
+              })()}
             </span>
           </div>
 

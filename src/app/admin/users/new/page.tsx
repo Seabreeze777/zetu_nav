@@ -82,12 +82,13 @@ export default function NewUserPage() {
 
   return (
     <AdminLayout>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">添加用户</h1>
-        <p className="text-gray-600">创建新的系统用户</p>
-      </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">添加用户</h1>
+          <p className="text-gray-600">创建新的系统用户</p>
+        </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6 max-w-2xl">
+        <div className="bg-white rounded-lg shadow-sm p-6 max-w-2xl">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 用户名 */}
           <div>
@@ -222,6 +223,7 @@ export default function NewUserPage() {
             </button>
           </div>
         </form>
+      </div>
       </div>
     </AdminLayout>
   );

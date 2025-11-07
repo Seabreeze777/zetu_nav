@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
+import { logUpdate, logDelete } from '@/lib/audit-log'
 
 /**
  * PUT /api/admin/websites/[id]
@@ -33,6 +34,11 @@ export async function PUT(
 
     console.log('📝 更新网站 ID:', websiteId)
     console.log('📦 收到的 actionButtons:', actionButtons)
+
+    // 获取更新前的数据
+    const before = await prisma.website.findUnique({
+      where: { id: websiteId },
+    })
 
     // 更新网站和标签关系
     const website = await prisma.$transaction(async (tx) => {
@@ -70,6 +76,21 @@ export async function PUT(
 
       return updatedWebsite
     })
+
+    // 记录操作日志
+    try {
+      await logUpdate(
+        request,
+        currentUser.userId,
+        'Website',
+        websiteId,
+        name,
+        before,
+        website
+      )
+    } catch (error) {
+      console.error('记录操作日志失败:', error)
+    }
 
     return NextResponse.json({
       success: true,
@@ -112,11 +133,31 @@ export async function PATCH(
 
     const body = await request.json()
 
+    // 获取更新前的数据
+    const before = await prisma.website.findUnique({
+      where: { id: websiteId },
+    })
+
     // 更新网站
     const website = await prisma.website.update({
       where: { id: websiteId },
       data: body,
     })
+
+    // 记录操作日志
+    try {
+      await logUpdate(
+        request,
+        currentUser.userId,
+        'Website',
+        websiteId,
+        website.name,
+        before,
+        website
+      )
+    } catch (error) {
+      console.error('记录操作日志失败:', error)
+    }
 
     return NextResponse.json({
       success: true,
@@ -157,10 +198,31 @@ export async function DELETE(
       )
     }
 
+    // 获取网站信息（用于日志）
+    const website = await prisma.website.findUnique({
+      where: { id: websiteId },
+    })
+
     // 删除网站（会自动删除关联的标签关系）
     await prisma.website.delete({
       where: { id: websiteId },
     })
+
+    // 记录操作日志
+    if (website) {
+      try {
+        await logDelete(
+          request,
+          currentUser.userId,
+          'Website',
+          websiteId,
+          website.name,
+          website
+        )
+      } catch (error) {
+        console.error('记录操作日志失败:', error)
+      }
+    }
 
     return NextResponse.json({
       success: true,

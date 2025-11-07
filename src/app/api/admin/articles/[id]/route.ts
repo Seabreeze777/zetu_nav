@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
+import { logUpdate, logDelete } from '@/lib/audit-log'
 
 /**
  * PATCH /api/admin/articles/[id]
@@ -30,6 +31,11 @@ export async function PATCH(
 
     const body = await request.json()
 
+    // 获取更新前的数据
+    const before = await prisma.article.findUnique({
+      where: { id: articleId },
+    })
+
     // 如果更新发布状态，同时更新发布时间
     if (body.isPublished !== undefined) {
       body.publishedAt = body.isPublished ? new Date() : null
@@ -40,6 +46,21 @@ export async function PATCH(
       where: { id: articleId },
       data: body,
     })
+
+    // 记录操作日志
+    try {
+      await logUpdate(
+        request,
+        currentUser.userId,
+        'Article',
+        articleId,
+        article.title,
+        before,
+        article
+      )
+    } catch (error) {
+      console.error('记录操作日志失败:', error)
+    }
 
     return NextResponse.json({
       success: true,
@@ -80,10 +101,31 @@ export async function DELETE(
       )
     }
 
+    // 获取文章信息（用于日志）
+    const article = await prisma.article.findUnique({
+      where: { id: articleId },
+    })
+
     // 删除文章（会自动删除关联的标签关系）
     await prisma.article.delete({
       where: { id: articleId },
     })
+
+    // 记录操作日志
+    if (article) {
+      try {
+        await logDelete(
+          request,
+          currentUser.userId,
+          'Article',
+          articleId,
+          article.title,
+          article
+        )
+      } catch (error) {
+        console.error('记录操作日志失败:', error)
+      }
+    }
 
     return NextResponse.json({
       success: true,
@@ -151,6 +193,11 @@ export async function PUT(
       )
     }
 
+    // 获取更新前的数据
+    const before = await prisma.article.findUnique({
+      where: { id: articleId },
+    })
+
     // 更新文章和标签关系
     const article = await prisma.$transaction(async (tx) => {
       // 删除旧的标签关系
@@ -201,6 +248,21 @@ export async function PUT(
         },
       },
     })
+
+    // 记录操作日志
+    try {
+      await logUpdate(
+        request,
+        currentUser.userId,
+        'Article',
+        articleId,
+        title,
+        before,
+        fullArticle
+      )
+    } catch (error) {
+      console.error('记录操作日志失败:', error)
+    }
 
     return NextResponse.json({
       success: true,

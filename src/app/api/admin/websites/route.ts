@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyAuth } from '@/lib/auth'
-import { logAudit } from '@/lib/audit-log'
+import { logCreate } from '@/lib/audit-log'
 
 /**
  * GET /api/admin/websites
@@ -123,14 +123,18 @@ export async function POST(request: Request) {
 
     // 记录操作日志（失败不影响主流程）
     try {
-      await logAudit({
-        userId: user.userId,
-        action: 'create',
-        module: 'website',
-        targetId: website.id,
-        targetName: website.name,
-        request
-      })
+      await logCreate(
+        request,
+        user.userId,
+        'Website',
+        website.id,
+        website.name,
+        {
+          name: website.name,
+          url: website.url,
+          categoryId: website.categoryId,
+        }
+      )
     } catch (logError) {
       console.error('记录操作日志失败:', logError)
       // 忽略日志错误，继续返回成功
