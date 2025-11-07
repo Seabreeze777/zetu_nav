@@ -132,14 +132,13 @@ export default function TopNav() {
           <div className="flex items-center gap-8">
             <Link 
               href="/" 
-              className="flex items-center gap-2 transition-opacity hover:opacity-80"
+              className="flex items-center transition-opacity hover:opacity-80"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-purple-600 text-xl shadow-lg shadow-indigo-500/30">
-                🚀
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                {siteName}
-              </span>
+              <img 
+                src="/icons/logo_l.png" 
+                alt={siteName}
+                className="h-10 w-auto object-contain"
+              />
             </Link>
 
             {/* 菜单导航 */}

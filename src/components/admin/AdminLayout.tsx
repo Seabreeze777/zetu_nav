@@ -129,8 +129,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         {/* Logo 区域 */}
         <div className="h-16 flex items-center px-6 border-b border-white/10">
           <Link href="/admin" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-              <span className="text-white text-xl">⚡</span>
+            <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform p-1.5">
+              <img 
+                src="/icons/logo.png" 
+                alt="泽途网"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <span className="font-bold text-white text-base">泽途网</span>

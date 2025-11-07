@@ -24,13 +24,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files - 敏感信息
+# local env files
 .env
-.env*
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env*.local
 
 # vercel
 .vercel
@@ -40,46 +36,40 @@ yarn-error.log*
 next-env.d.ts
 
 # prisma
-/prisma/migrations
+prisma/.env
 
 # IDE
-.idea
 .vscode
+.idea
 *.swp
 *.swo
+*~
 
-# backup
-*.bak
+# OS
+Thumbs.db
+.DS_Store
 
-# logs
+# Logs
 logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
 
-# ==================== 用户指定屏蔽的目录 ====================
+# Testing
+.nyc_output
+coverage
+*.lcov
 
-# 设计预览目录（不需要提交到代码库）
-/design-preview/
+# PM2
+.pm2
+pids
+*.pid
+*.seed
+*.pid.lock
 
-# 文档目录（包含敏感配置说明）
-/docs/
-
-# 文档备份目录
-/docs_backup/
-
-# ==================== 其他敏感文件 ====================
-
-# 数据库文件
-*.db
-*.sqlite
-*.sqlite3
-
-# 密钥和证书
-*.key
-*.pem
-*.cert
-secrets/
-private/
-
-# 配置备份
-*.backup
-config.local.*
+# Temporary files
+tmp/
+temp/
