@@ -1,8 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { checkRateLimit, getClientIdentifier, RateLimitPresets } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
   try {
+    // API限流检查
+    const clientId = getClientIdentifier(request)
+    const rateLimit = checkRateLimit(`search:${clientId}`, RateLimitPresets.search)
+    
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: '搜索请求过于频繁，请稍后再试',
+        },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': rateLimit.resetTime.toString(),
+          }
+        }
+      )
+    }
+
     const { searchParams } = new URL(request.url);
     const q = searchParams.get('q'); // 搜索关键词
     const type = searchParams.get('type'); // 类型：website, article, all
