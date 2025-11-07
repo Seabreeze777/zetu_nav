@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
 interface SearchResult {
@@ -219,7 +220,9 @@ export default function GlobalSearch() {
                     className="w-full px-4 py-3 flex items-center gap-3 hover:bg-indigo-50 transition-colors group"
                   >
                     {result.icon ? (
-                      <img src={result.icon} alt="" className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
+                      <div className="w-8 h-8 rounded-lg relative overflow-hidden flex-shrink-0">
+                        <Image src={result.icon} alt="" fill className="object-cover" sizes="32px" />
+                      </div>
                     ) : (
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm">
                         🔗

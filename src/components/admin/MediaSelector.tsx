@@ -192,11 +192,13 @@ export default function MediaSelector({
         {/* 图片预览 */}
         {value ? (
           <div className="relative group">
-            <div className="w-32 h-32 rounded-lg border-2 border-gray-200 overflow-hidden bg-gray-50">
-              <img
+            <div className="w-32 h-32 rounded-lg border-2 border-gray-200 overflow-hidden bg-gray-50 relative">
+              <Image
                 src={value}
                 alt="预览"
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="128px"
               />
             </div>
             {/* 悬停操作 */}
@@ -446,12 +448,14 @@ export default function MediaSelector({
                         <div
                           key={media.id}
                           onClick={() => handleSelectMedia(media)}
-                          className="aspect-square rounded-lg border-2 border-gray-200 hover:border-indigo-500 overflow-hidden cursor-pointer transition-all hover:shadow-lg"
+                          className="aspect-square rounded-lg border-2 border-gray-200 hover:border-indigo-500 overflow-hidden cursor-pointer transition-all hover:shadow-lg relative"
                         >
-                          <img
+                          <Image
                             src={media.url}
                             alt={media.originalName}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
+                            sizes="200px"
                           />
                         </div>
                       ))}

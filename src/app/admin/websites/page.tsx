@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import AdminLayout from '@/components/admin/AdminLayout'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useToast } from '@/contexts/ToastContext'
 import ToggleSwitch from '@/components/common/ToggleSwitch'
 
@@ -189,9 +190,9 @@ export default function WebsitesPage() {
                     <tr key={site.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                          <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
                             {site.logoUrl ? (
-                              <img src={site.logoUrl} alt={site.name} className="w-full h-full object-cover" />
+                              <Image src={site.logoUrl} alt={site.name} fill className="object-cover" sizes="40px" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-gray-400">
                                 🌐

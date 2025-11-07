@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import AdminLayout from '@/components/admin/AdminLayout'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useToast } from '@/contexts/ToastContext'
 
 interface Article {
@@ -182,9 +183,9 @@ export default function ArticlesAdminPage() {
                     <tr key={article.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div className="flex items-start gap-3">
-                          <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                          <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
                             {article.coverImage ? (
-                              <img src={article.coverImage} alt={article.title} className="w-full h-full object-cover" />
+                              <Image src={article.coverImage} alt={article.title} fill className="object-cover" sizes="64px" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-gray-400">
                                 📄

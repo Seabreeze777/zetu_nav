@@ -611,14 +611,15 @@ export default function MediaLibraryPage() {
                     {/* 图片预览 */}
                     <div className="aspect-square bg-gray-100 relative">
                       {item.mimeType.startsWith('image/') ? (
-                        <img
+                        <Image
                           src={item.url}
                           alt={item.originalName}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
+                          fill
+                          className="object-cover"
+                          sizes="200px"
+                          onError={() => {
                             console.error('❌ 图片加载失败:', item.url)
                             console.error('文件信息:', item)
-                            e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Ctext x="50%25" y="50%25" font-size="40" text-anchor="middle" dy=".3em"%3E🖼️%3C/text%3E%3Ctext x="50%25" y="70%25" font-size="12" fill="red" text-anchor="middle"%3E图片加载失败%3C/text%3E%3C/svg%3E'
                           }}
                           onLoad={() => {
                             console.log('✅ 图片加载成功:', item.url)
