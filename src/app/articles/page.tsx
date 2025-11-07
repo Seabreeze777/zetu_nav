@@ -5,8 +5,6 @@ import Pagination from '@/components/common/Pagination'
 import ArticleListLayout from '@/components/articles/ArticleListLayout'
 import ArticleFilter from '@/components/articles/ArticleFilter'
 import ArticleListCard from '@/components/articles/ArticleListCard'
-import ArticleListCardSkeleton from '@/components/skeleton/ArticleListCardSkeleton'
-import ArticleFilterSkeleton from '@/components/skeleton/ArticleFilterSkeleton'
 
 // 类型定义
 interface ArticleCategory {
@@ -43,7 +41,7 @@ interface Article {
 
 export default function ArticlesPage() {
   const [activeCategory, setActiveCategory] = useState('all')
-  const [isLoading, setIsLoading] = useState(false) // 默认不显示骨架屏
+  const [isLoading, setIsLoading] = useState(true) // ✅ 每次都显示骨架屏（符合用户期望）
   const [categories, setCategories] = useState<ArticleCategory[]>([])
   const [articles, setArticles] = useState<Article[]>([])
   const [allArticles, setAllArticles] = useState<Article[]>([]) // 保存所有文章用于搜索
@@ -77,8 +75,9 @@ export default function ArticlesPage() {
         }
       } catch (error) {
         console.error('获取数据失败:', error)
+      } finally {
+        setIsLoading(false) // ✅ 加载完成后隐藏骨架屏
       }
-      // 不需要 setIsLoading(false)，因为默认就是 false
     }
 
     fetchData()
@@ -264,7 +263,14 @@ export default function ArticlesPage() {
       header={header}
       sidebar={
         isLoading ? (
-          <ArticleFilterSkeleton />
+          // 侧边栏骨架屏
+          <div className="bg-white rounded-2xl shadow-sm p-4">
+            <div className="space-y-2">
+              {[1,2,3,4,5,6].map(i => (
+                <div key={i} className="h-10 bg-gray-200 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          </div>
         ) : (
           <ArticleFilter
             categories={categories}
@@ -310,12 +316,25 @@ export default function ArticlesPage() {
           )}
         </div>
 
-        {/* 文章列表 - 2列网格 */}
+        {/* 文章列表 - 2列网格 - 使用真实组件显示骨架屏 */}
         <div className="grid grid-cols-2 gap-6">
           {isLoading ? (
-            // 骨架屏 - 6个卡片
+            // 骨架屏 - 使用真实ArticleListCard组件的loading状态
             [...Array(6)].map((_, i) => (
-              <ArticleListCardSkeleton key={i} />
+              <ArticleListCard
+                key={i}
+                slug=""
+                title=""
+                description=""
+                coverImage=""
+                category=""
+                tags={[]}
+                author=""
+                date=""
+                readTime=""
+                views={0}
+                isLoading={true}
+              />
             ))
           ) : (
             // 真实内容

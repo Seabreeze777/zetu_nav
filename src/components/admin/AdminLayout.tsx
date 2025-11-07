@@ -16,6 +16,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const menuItems = [
     { name: '仪表盘', icon: '📊', href: '/admin', exact: true },
+    { name: '监控面板', icon: '📈', href: '/admin/dashboard' },
+    { name: '操作日志', icon: '📜', href: '/admin/logs' },
     { name: '网站管理', icon: '🌐', href: '/admin/websites' },
     { name: '文章管理', icon: '📝', href: '/admin/articles' },
     { name: '分类管理', icon: '📂', href: '/admin/categories' },

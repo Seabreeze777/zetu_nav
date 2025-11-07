@@ -1,14 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    // 允许的图片域名
-    domains: [
-      'picsum.photos', // 占位图服务
-      'via.placeholder.com', // 占位图服务
-      'avatars.githubusercontent.com', // GitHub头像
-      'zetu-nav-1302966033.cos.ap-chengdu.myqcloud.com', // 腾讯云COS
-    ],
-    // 允许所有外部图片（开发环境方便，生产环境建议限制）
+    // 允许所有外部图片域名（解决403/404错误）
     remotePatterns: [
       {
         protocol: 'https',
@@ -19,6 +12,14 @@ const nextConfig = {
         hostname: '**',
       },
     ],
+    // 图片加载失败时的处理
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // 增加超时时间
+    minimumCacheTTL: 60,
+    // 禁用图片优化（避免外部图片403）
+    unoptimized: true,
   },
 }
 

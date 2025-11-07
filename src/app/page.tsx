@@ -4,10 +4,6 @@ import { useEffect, useState } from 'react'
 import HeroSection from '@/components/home/HeroSection'
 import WebsiteCard from '@/components/home/WebsiteCard'
 import FeaturedCard from '@/components/home/FeaturedCard'
-import HeroSectionSkeleton from '@/components/skeleton/HeroSectionSkeleton'
-import SidebarSkeleton from '@/components/skeleton/SidebarSkeleton'
-import WebsiteCardSkeleton from '@/components/skeleton/WebsiteCardSkeleton'
-import FeaturedCardSkeleton from '@/components/skeleton/FeaturedCardSkeleton'
 
 // 类型定义
 interface Category {
@@ -53,7 +49,7 @@ interface CategoryWebsites {
 // 首页组件
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState('')
-  const [isLoading, setIsLoading] = useState(false) // 默认不显示骨架屏
+  const [isLoading, setIsLoading] = useState(true) // ✅ 每次都显示骨架屏（符合用户期望）
   const [categories, setCategories] = useState<Category[]>([])
   const [websitesByCategory, setWebsitesByCategory] = useState<CategoryWebsites>({})
 
@@ -90,8 +86,9 @@ export default function HomePage() {
         }
       } catch (error) {
         console.error('获取数据失败:', error)
+      } finally {
+        setIsLoading(false) // ✅ 加载完成后隐藏骨架屏
       }
-      // 不需要 setIsLoading(false)，因为默认就是 false
     }
 
     fetchData()
@@ -175,29 +172,62 @@ export default function HomePage() {
   }
 
 
-  // 骨架屏
+  // 骨架屏 - 使用真实组件结构，只是显示loading状态
   if (isLoading) {
+    // 预设骨架屏数据（模拟真实布局）
+    const skeletonCategories = [
+      { id: 1, name: '', slug: 'skeleton-1', icon: '', description: '', cardsPerRow: 6, displayMode: 'compact', websiteCount: 6 },
+      { id: 2, name: '', slug: 'skeleton-2', icon: '', description: '', cardsPerRow: 5, displayMode: 'button', websiteCount: 5 },
+      { id: 3, name: '', slug: 'skeleton-3', icon: '', description: '', cardsPerRow: 4, displayMode: 'large', websiteCount: 8 },
+    ]
+
     return (
       <div className="bg-gray-50">
-        <HeroSectionSkeleton />
+        {/* Hero区域 - 传入loading状态 */}
+        <HeroSection isLoading={true} />
+        
         <div className="container mx-auto px-6 py-6">
           <div className="flex gap-6">
-            <SidebarSkeleton />
+            {/* 左侧边栏骨架屏 */}
+            <aside className="sticky top-20 h-fit w-44">
+              <div className="bg-white rounded-2xl shadow-sm p-2">
+                <nav className="space-y-0.5">
+                  {[1,2,3,4,5,6,7,8].map(i => (
+                    <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl">
+                      <div className="text-lg flex-shrink-0 w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 rounded flex-1 animate-pulse"></div>
+                    </div>
+                  ))}
+                </nav>
+              </div>
+            </aside>
+
+            {/* 右侧内容区 - 使用真实WebsiteCard组件的loading状态 */}
             <main className="flex-1 min-w-0">
               <div className="space-y-8">
-                {[6, 5, 4, 3].map((cols, idx) => (
-                  <section key={idx}>
-                    <div className="h-6 bg-gray-200 rounded w-32 mb-3 animate-pulse"></div>
+                {skeletonCategories.map((category) => (
+                  <section key={category.slug} className="scroll-mt-20">
+                    {/* 分类标题骨架屏 */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-6 bg-gray-200 rounded w-24 animate-pulse"></div>
+                    </div>
+                    
+                    {/* 使用真实WebsiteCard组件，传入isLoading=true */}
                     <div className={`grid gap-3 ${
-                      cols === 6 ? 'grid-cols-6' :
-                      cols === 5 ? 'grid-cols-5' :
-                      cols === 4 ? 'grid-cols-4' :
-                      'grid-cols-3'
+                      category.displayMode === 'large' ? 'grid-cols-4' :
+                      category.displayMode === 'button' ? 'grid-cols-5' :
+                      'grid-cols-6'
                     }`}>
-                      {[...Array(cols * 2)].map((_, i) => (
-                        <WebsiteCardSkeleton
+                      {Array(category.websiteCount).fill(0).map((_, i) => (
+                        <WebsiteCard
                           key={i}
-                          size={cols >= 6 ? 'small' : cols === 5 ? 'medium' : 'large'}
+                          name=""
+                          description=""
+                          logo=""
+                          url=""
+                          displayMode={category.displayMode as 'large' | 'button' | 'compact'}
+                          isLoading={true}
                         />
                       ))}
                     </div>

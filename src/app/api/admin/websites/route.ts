@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyAuth } from '@/lib/auth'
+import { logAudit } from '@/lib/audit-log'
 
 /**
  * GET /api/admin/websites
@@ -70,6 +71,79 @@ export async function GET(request: Request) {
     console.error('获取网站列表失败:', error)
     return NextResponse.json(
       { success: false, error: '获取网站列表失败' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * POST /api/admin/websites
+ * 创建新网站
+ */
+export async function POST(request: Request) {
+  try {
+    // 验证管理员权限
+    const user = await verifyAuth(request)
+    if (!user || user.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, error: '权限不足' },
+        { status: 403 }
+      )
+    }
+
+    const body = await request.json()
+    const { name, description, url, logoUrl, categoryId, tagIds, isActive, sortOrder, actionButtons } = body
+
+    // 创建网站
+    const website = await prisma.website.create({
+      data: {
+        name,
+        description,
+        url,
+        logoUrl,
+        categoryId,
+        isActive: isActive ?? true,
+        sortOrder: sortOrder ?? 0,
+        actionButtons: actionButtons || [],
+        tags: {
+          create: tagIds?.map((tagId: number) => ({
+            tag: { connect: { id: tagId } }
+          })) || []
+        }
+      },
+      include: {
+        category: true,
+        tags: {
+          include: {
+            tag: true
+          }
+        }
+      }
+    })
+
+    // 记录操作日志（失败不影响主流程）
+    try {
+      await logAudit({
+        userId: user.userId,
+        action: 'create',
+        module: 'website',
+        targetId: website.id,
+        targetName: website.name,
+        request
+      })
+    } catch (logError) {
+      console.error('记录操作日志失败:', logError)
+      // 忽略日志错误，继续返回成功
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: website
+    })
+  } catch (error) {
+    console.error('创建网站失败:', error)
+    return NextResponse.json(
+      { success: false, error: '创建网站失败' },
       { status: 500 }
     )
   }
