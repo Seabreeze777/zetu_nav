@@ -3,6 +3,7 @@ import './globals.css'
 import TopNav from '@/components/layout/TopNav'
 import Footer from '@/components/layout/Footer'
 import FloatingButtons from '@/components/common/FloatingButtons'
+import NProgressBar from '@/components/common/NProgressBar'
 import Providers from '@/components/providers/Providers'
 import { siteConfig } from '@/config/site'
 import { checkEnv } from '@/lib/check-env'
@@ -32,6 +33,9 @@ export default function RootLayout({
     <html lang="zh-CN">
       <body className="flex min-h-screen flex-col">
         <Providers>
+          {/* 全局进度条 */}
+          <NProgressBar />
+          
           {/* 顶部导航 - 全站通用 */}
           <TopNav />
           

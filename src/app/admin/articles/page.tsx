@@ -5,6 +5,8 @@ import AdminLayout from '@/components/admin/AdminLayout'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useToast } from '@/contexts/ToastContext'
+import LoadingButton from '@/components/common/LoadingButton'
+import ConfirmDialog from '@/components/common/ConfirmDialog'
 
 interface Article {
   id: number
@@ -33,6 +35,9 @@ export default function ArticlesAdminPage() {
   const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; id: number; title: string }>({ isOpen: false, id: 0, title: '' })
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [publishingId, setPublishingId] = useState<number | null>(null)
 
   useEffect(() => {
     fetchArticles()
@@ -53,31 +58,35 @@ export default function ArticlesAdminPage() {
     }
   }
 
-  const handleDelete = async (id: number, title: string) => {
-    toast.confirm(
-      `确定要删除文章"${title}"吗？此操作不可恢复！`,
-      async () => {
-        try {
-          const res = await fetch(`/api/admin/articles/${id}`, {
-            method: 'DELETE',
-          })
-          const data = await res.json()
+  const openDeleteDialog = (id: number, title: string) => {
+    setDeleteDialog({ isOpen: true, id, title })
+  }
 
-          if (data.success) {
-            toast.success('删除成功！')
-            fetchArticles()
-          } else {
-            toast.error('删除失败：' + data.error)
-          }
-        } catch (error) {
-          console.error('删除失败:', error)
-          toast.error('删除失败，请稍后重试')
-        }
+  const handleDelete = async () => {
+    setDeleteLoading(true)
+    try {
+      const res = await fetch(`/api/admin/articles/${deleteDialog.id}`, {
+        method: 'DELETE',
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        toast.success('删除成功！')
+        setDeleteDialog({ isOpen: false, id: 0, title: '' })
+        fetchArticles()
+      } else {
+        toast.error('删除失败：' + data.error)
       }
-    )
+    } catch (error) {
+      console.error('删除失败:', error)
+      toast.error('删除失败，请稍后重试')
+    } finally {
+      setDeleteLoading(false)
+    }
   }
 
   const handleTogglePublish = async (id: number, currentStatus: boolean) => {
+    setPublishingId(id)
     try {
       const res = await fetch(`/api/admin/articles/${id}`, {
         method: 'PATCH',
@@ -95,6 +104,8 @@ export default function ArticlesAdminPage() {
     } catch (error) {
       console.error('操作失败:', error)
       toast.error('操作失败，请稍后重试')
+    } finally {
+      setPublishingId(null)
     }
   }
 
@@ -115,9 +126,10 @@ export default function ArticlesAdminPage() {
             </div>
           <Link
             href="/admin/articles/new"
-            className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-medium hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-medium hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0"
           >
-            ✍️ 写文章
+            <span>✍️</span>
+            <span>写文章</span>
           </Link>
         </div>
 
@@ -217,35 +229,33 @@ export default function ArticlesAdminPage() {
                         <span className="text-sm text-gray-900">{article.views}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <button
+                        <LoadingButton
                           onClick={() => handleTogglePublish(article.id, article.isPublished)}
-                          className={`px-2 py-1 text-xs font-medium rounded-lg ${
-                            article.isPublished
-                              ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          }`}
+                          loading={publishingId === article.id}
+                          size="sm"
+                          variant={article.isPublished ? 'success' : 'secondary'}
                         >
                           {article.isPublished ? '✓ 已发布' : '✕ 草稿'}
-                        </button>
+                        </LoadingButton>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             href={`/posts/${article.slug}`}
                             target="_blank"
-                            className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:shadow-sm transform hover:-translate-y-0.5"
                           >
                             预览
                           </Link>
                           <Link
                             href={`/admin/articles/${article.id}`}
-                            className="px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            className="px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200 hover:shadow-sm transform hover:-translate-y-0.5"
                           >
                             编辑
                           </Link>
                           <button
-                            onClick={() => handleDelete(article.id, article.title)}
-                            className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            onClick={() => openDeleteDialog(article.id, article.title)}
+                            className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 hover:shadow-sm transform hover:-translate-y-0.5"
                           >
                             删除
                           </button>
@@ -260,6 +270,19 @@ export default function ArticlesAdminPage() {
         </div>
         </div>
       </div>
+
+      {/* 删除确认对话框 */}
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={() => setDeleteDialog({ isOpen: false, id: 0, title: '' })}
+        onConfirm={handleDelete}
+        title="确认删除文章"
+        message={`确定要删除文章"${deleteDialog.title}"吗？此操作不可恢复！`}
+        confirmText="删除"
+        cancelText="取消"
+        type="danger"
+        loading={deleteLoading}
+      />
     </AdminLayout>
   )
 }

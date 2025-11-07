@@ -1,0 +1,75 @@
+/* NProgress 进度条样式 - 自定义颜色和动画 */
+
+/* 进度条本体 */
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.7), 0 0 5px rgba(99, 102, 241, 0.5);
+}
+
+/* 右侧的旋转圆圈 */
+#nprogress .peg {
+  display: block;
+  position: absolute;
+  right: 0px;
+  width: 100px;
+  height: 100%;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.8), 0 0 8px rgba(99, 102, 241, 0.6);
+  opacity: 1.0;
+  transform: rotate(3deg) translate(0px, -4px);
+}
+
+/* 可选：加载旋转器 */
+#nprogress .spinner {
+  display: block;
+  position: fixed;
+  z-index: 9999;
+  top: 20px;
+  right: 20px;
+}
+
+#nprogress .spinner-icon {
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  border: solid 3px transparent;
+  border-top-color: #6366f1;
+  border-left-color: #6366f1;
+  border-radius: 50%;
+  animation: nprogress-spinner 400ms linear infinite;
+}
+
+@keyframes nprogress-spinner {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 移除旋转器，只保留顶部进度条 */
+#nprogress .spinner {
+  display: none !important;
+}
+
+/* 进度条动画优化 */
+#nprogress .bar {
+  transition: width 0.4s ease, opacity 0.4s ease;
+}
+
+/* 慢速动画效果 */
+.nprogress-custom-parent {
+  overflow: hidden;
+  position: relative;
+}
+
+.nprogress-custom-parent #nprogress .bar {
+  position: absolute;
+}
+

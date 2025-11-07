@@ -6,6 +6,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useToast } from '@/contexts/ToastContext'
 import ToggleSwitch from '@/components/common/ToggleSwitch'
+import LoadingButton from '@/components/common/LoadingButton'
+import ConfirmDialog from '@/components/common/ConfirmDialog'
 
 interface Website {
   id: number
@@ -31,6 +33,9 @@ export default function WebsitesPage() {
   const [websites, setWebsites] = useState<Website[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; id: number; name: string }>({ isOpen: false, id: 0, name: '' })
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [togglingId, setTogglingId] = useState<number | null>(null)
 
   useEffect(() => {
     fetchWebsites()
@@ -59,31 +64,35 @@ export default function WebsitesPage() {
     }
   }
 
-  const handleDelete = async (id: number, name: string) => {
-    toast.confirm(
-      `确定要删除网站"${name}"吗？此操作不可恢复！`,
-      async () => {
-        try {
-          const res = await fetch(`/api/admin/websites/${id}`, {
-            method: 'DELETE',
-          })
-          const data = await res.json()
+  const openDeleteDialog = (id: number, name: string) => {
+    setDeleteDialog({ isOpen: true, id, name })
+  }
 
-          if (data.success) {
-            toast.success('删除成功！')
-            fetchWebsites()
-          } else {
-            toast.error('删除失败：' + data.error)
-          }
-        } catch (error) {
-          console.error('删除失败:', error)
-          toast.error('删除失败，请稍后重试')
-        }
+  const handleDelete = async () => {
+    setDeleteLoading(true)
+    try {
+      const res = await fetch(`/api/admin/websites/${deleteDialog.id}`, {
+        method: 'DELETE',
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        toast.success('删除成功！')
+        setDeleteDialog({ isOpen: false, id: 0, name: '' })
+        fetchWebsites()
+      } else {
+        toast.error('删除失败：' + data.error)
       }
-    )
+    } catch (error) {
+      console.error('删除失败:', error)
+      toast.error('删除失败，请稍后重试')
+    } finally {
+      setDeleteLoading(false)
+    }
   }
 
   const handleToggleActive = async (id: number, currentStatus: boolean) => {
+    setTogglingId(id)
     try {
       const res = await fetch(`/api/admin/websites/${id}`, {
         method: 'PATCH',
@@ -101,6 +110,8 @@ export default function WebsitesPage() {
     } catch (error) {
       console.error('操作失败:', error)
       toast.error('操作失败，请稍后重试')
+    } finally {
+      setTogglingId(null)
     }
   }
 
@@ -122,9 +133,10 @@ export default function WebsitesPage() {
           </div>
           <Link
             href="/admin/websites/new"
-            className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-medium hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-medium hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0"
           >
-            ➕ 添加网站
+            <span>➕</span>
+            <span>添加网站</span>
           </Link>
         </div>
 
@@ -241,13 +253,13 @@ export default function WebsitesPage() {
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             href={`/admin/websites/${site.id}`}
-                            className="px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            className="px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200 hover:shadow-sm transform hover:-translate-y-0.5"
                           >
                             编辑
                           </Link>
                           <button
-                            onClick={() => handleDelete(site.id, site.name)}
-                            className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            onClick={() => openDeleteDialog(site.id, site.name)}
+                            className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 hover:shadow-sm transform hover:-translate-y-0.5"
                           >
                             删除
                           </button>
@@ -262,6 +274,19 @@ export default function WebsitesPage() {
         </div>
         </div>
       </div>
+
+      {/* 删除确认对话框 */}
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={() => setDeleteDialog({ isOpen: false, id: 0, name: '' })}
+        onConfirm={handleDelete}
+        title="确认删除网站"
+        message={`确定要删除网站"${deleteDialog.name}"吗？此操作不可恢复！`}
+        confirmText="删除"
+        cancelText="取消"
+        type="danger"
+        loading={deleteLoading}
+      />
     </AdminLayout>
   )
 }

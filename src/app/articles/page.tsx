@@ -263,14 +263,29 @@ export default function ArticlesPage() {
       header={header}
       sidebar={
         isLoading ? (
-          // 侧边栏骨架屏
-          <div className="bg-white rounded-2xl shadow-sm p-4">
-            <div className="space-y-2">
-              {[1,2,3,4,5,6].map(i => (
-                <div key={i} className="h-10 bg-gray-200 rounded-lg animate-pulse" />
-              ))}
+          // 侧边栏骨架屏 - 精确匹配 ArticleFilter 布局
+          <aside className="w-44 flex-shrink-0">
+            <div className="sticky top-20 h-fit">
+              <div className="bg-white rounded-2xl shadow-sm p-2">
+                <nav className="space-y-0.5">
+                  {[1,2,3,4,5,6].map(i => (
+                    <div
+                      key={i}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl"
+                    >
+                      {/* 图标骨架 */}
+                      <div className="w-5 h-5 bg-gray-200 rounded animate-pulse flex-shrink-0" />
+                      
+                      {/* 文字骨架 */}
+                      <div className={`flex-1 h-4 bg-gray-200 rounded animate-pulse ${
+                        i === 1 ? 'w-16' : i === 2 ? 'w-20' : i === 3 ? 'w-20' : i === 4 ? 'w-24' : i === 5 ? 'w-20' : 'w-20'
+                      }`} />
+                    </div>
+                  ))}
+                </nav>
+              </div>
             </div>
-          </div>
+          </aside>
         ) : (
           <ArticleFilter
             categories={categories}
