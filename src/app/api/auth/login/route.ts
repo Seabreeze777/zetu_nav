@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { generateToken, setAuthCookie } from '@/lib/auth'
 import { logLogin } from '@/lib/audit-log'
+import { checkRateLimit, getClientIdentifier, RateLimitPresets } from '@/lib/rate-limit'
 
 /**
  * POST /api/auth/login
@@ -10,6 +11,27 @@ import { logLogin } from '@/lib/audit-log'
  */
 export async function POST(request: Request) {
   try {
+    // API限流检查
+    const clientId = getClientIdentifier(request)
+    const rateLimit = checkRateLimit(`login:${clientId}`, RateLimitPresets.login)
+    
+    if (!rateLimit.allowed) {
+      const resetMinutes = Math.ceil((rateLimit.resetTime - Date.now()) / 60000)
+      return NextResponse.json(
+        {
+          success: false,
+          error: `登录尝试次数过多，请${resetMinutes}分钟后再试`,
+        },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': rateLimit.resetTime.toString(),
+          }
+        }
+      )
+    }
+
     const body = await request.json()
     const { username, password } = body
 
