@@ -15,13 +15,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
-    const module = searchParams.get('module') || undefined
+    const moduleParam = searchParams.get('module') || undefined
     const action = searchParams.get('action') || undefined
     const userId = searchParams.get('userId') ? parseInt(searchParams.get('userId')!) : undefined
 
     // 构建查询条件
     const where: any = {}
-    if (module) where.module = module
+    if (moduleParam) where.module = moduleParam
     if (action) where.action = action
     if (userId) where.userId = userId
 

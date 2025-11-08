@@ -48,7 +48,7 @@ interface DashboardStats {
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
-  const { toast } = useToast()
+  const toast = useToast()
 
   useEffect(() => {
     fetchStats()

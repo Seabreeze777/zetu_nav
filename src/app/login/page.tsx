@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showRegisterDialog, setShowRegisterDialog] = useState(false)
 
   // 如果已经登录，跳转到首页或回调地址
   useEffect(() => {
@@ -46,6 +47,15 @@ export default function LoginPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleRegisterClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setShowRegisterDialog(true)
+    // 3秒后自动关闭
+    setTimeout(() => {
+      setShowRegisterDialog(false)
+    }, 3000)
   }
 
   return (
@@ -148,21 +158,46 @@ export default function LoginPage() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
               还没有账号？
-              <a href="#" className="text-indigo-600 hover:text-indigo-700 font-medium ml-1">
+              <button 
+                onClick={handleRegisterClick}
+                className="text-indigo-600 hover:text-indigo-700 font-medium ml-1 transition-colors"
+              >
                 注册
-              </a>
+              </button>
             </p>
           </div>
+        </div>
 
-          {/* 测试账号提示 */}
-          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <p className="text-xs text-blue-800 font-medium mb-2">💡 测试账号</p>
-            <div className="space-y-1 text-xs text-blue-700">
-              <p>👑 管理员：<code className="bg-blue-100 px-2 py-0.5 rounded">admin</code> / <code className="bg-blue-100 px-2 py-0.5 rounded">admin123</code></p>
-              <p>👤 普通用户：<code className="bg-blue-100 px-2 py-0.5 rounded">user</code> / <code className="bg-blue-100 px-2 py-0.5 rounded">user123</code></p>
+        {/* 注册未开放提示弹窗 */}
+        {showRegisterDialog && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full animate-scale-in">
+              <div className="text-center">
+                {/* 图标 */}
+                <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                {/* 标题 */}
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  功能暂未开放
+                </h3>
+                {/* 内容 */}
+                <p className="text-gray-600 mb-6">
+                  注册功能暂时未开放，敬请期待！
+                </p>
+                {/* 按钮 */}
+                <button
+                  onClick={() => setShowRegisterDialog(false)}
+                  className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 rounded-xl font-medium hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+                >
+                  我知道了
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* 底部链接 */}
         <div className="text-center mt-6">

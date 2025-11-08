@@ -179,7 +179,6 @@ export default function NewUserPage() {
               folder="avatars"
               label=""
               description="推荐尺寸：200x200px"
-              buttonText="上传头像"
             />
             <p className="mt-1 text-sm text-gray-500">
               选填，可在用户设置中修改

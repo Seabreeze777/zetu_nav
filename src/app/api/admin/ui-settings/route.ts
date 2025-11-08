@@ -124,7 +124,7 @@ export async function PUT(request: NextRequest) {
     await createAuditLog({
       userId: currentUser.userId,
       action: 'UPDATE',
-      module: 'UISettings',
+      module: 'SystemConfig',
       targetId: settings.id,
       targetName: `Hero样式 ${settings.heroStyle}`,
       changes: {

@@ -194,7 +194,6 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
               folder="avatars"
               label=""
               description="推荐尺寸：200x200px"
-              buttonText="上传头像"
             />
           </div>
 

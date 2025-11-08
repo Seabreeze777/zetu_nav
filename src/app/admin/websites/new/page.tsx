@@ -267,7 +267,7 @@ export default function NewWebsitePage() {
                 <div>
                   <h2 className="text-lg font-bold text-gray-900">扩展按钮配置</h2>
                   <p className="text-sm text-gray-500 mt-1">
-                    💡 当前分类使用"按钮模式(5列)"，这些按钮会显示在卡片下方
+                    💡 当前分类使用&ldquo;按钮模式(5列)&rdquo;，这些按钮会显示在卡片下方
                   </p>
                 </div>
               <button
@@ -288,7 +288,7 @@ export default function NewWebsitePage() {
 
             {formData.actionButtons.length === 0 ? (
               <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center">
-                <p className="text-gray-500 text-sm">暂无扩展按钮，点击上方"添加按钮"创建</p>
+                <p className="text-gray-500 text-sm">暂无扩展按钮，点击上方&ldquo;添加按钮&rdquo;创建</p>
               </div>
             ) : (
               <div className="space-y-3">

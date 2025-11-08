@@ -8,13 +8,31 @@ interface Category {
   articleCount: number
 }
 
+interface Tag {
+  id: number
+  name: string
+  slug: string
+  color: string
+  articleCount: number
+}
+
 interface ArticleFilterProps {
   categories: Category[]
   activeCategory: string
   onCategoryChange: (categorySlug: string) => void
+  tags?: Tag[]
+  activeTag?: string
+  onTagChange?: (tagSlug: string) => void
 }
 
-export default function ArticleFilter({ categories, activeCategory, onCategoryChange }: ArticleFilterProps) {
+export default function ArticleFilter({ 
+  categories, 
+  activeCategory, 
+  onCategoryChange,
+  tags = [],
+  activeTag = '',
+  onTagChange
+}: ArticleFilterProps) {
   const allCategories = [
     { id: 0, name: '全部文章', slug: 'all', icon: '📚', articleCount: 0 },
     ...categories,
@@ -22,8 +40,8 @@ export default function ArticleFilter({ categories, activeCategory, onCategoryCh
 
   return (
     <aside className="w-44 flex-shrink-0">
-      <div className="sticky top-20 h-fit">
-        {/* 分类过滤 - 按照首页侧边栏标准 */}
+      <div className="sticky top-20 h-fit space-y-4">
+        {/* 分类过滤 */}
         <div className="bg-white rounded-2xl shadow-sm p-2">
           <nav className="space-y-0.5">
             {allCategories.map((category) => (
@@ -73,6 +91,38 @@ export default function ArticleFilter({ categories, activeCategory, onCategoryCh
             ))}
           </nav>
         </div>
+
+        {/* 热门标签筛选 */}
+        {tags.length > 0 && onTagChange && (
+          <div className="bg-white rounded-2xl shadow-sm p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm font-semibold text-gray-700">🏷️ 热门标签</span>
+              {activeTag && (
+                <button
+                  onClick={() => onTagChange('')}
+                  className="text-xs text-gray-400 hover:text-indigo-600 transition-colors"
+                >
+                  清除
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {tags.slice(0, 10).map((tag) => (
+                <button
+                  key={tag.slug}
+                  onClick={() => onTagChange(tag.slug)}
+                  className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200 ${
+                    activeTag === tag.slug
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600'
+                  }`}
+                >
+                  {tag.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </aside>
   )

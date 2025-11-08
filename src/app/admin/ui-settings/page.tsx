@@ -346,7 +346,7 @@ export default function UISettingsPage() {
                         placeholder="找"
                       />
                       <p className="mt-2 text-xs text-gray-500">
-                        显示在打字机动画前的文字（例如："找"）
+                        显示在打字机动画前的文字（例如：&ldquo;找&rdquo;）
                       </p>
                     </div>
 

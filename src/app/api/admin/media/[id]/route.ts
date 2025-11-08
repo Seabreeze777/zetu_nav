@@ -67,7 +67,7 @@ export async function DELETE(
 
     // 从 COS 删除文件
     try {
-      await deleteFromCOS(media.cosKey, media.bucket)
+      await deleteFromCOS(media.cosKey)
     } catch (error) {
       console.error('从 COS 删除文件失败:', error)
       // 继续删除数据库记录

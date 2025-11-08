@@ -180,8 +180,6 @@ export async function PUT(
     console.error('错误对象:', error);
     console.error('错误消息:', error.message);
     console.error('错误堆栈:', error.stack);
-    console.error('请求体:', body);
-    console.error('分类ID:', id);
     return NextResponse.json({ 
       error: '更新分类失败',
       details: error.message 

@@ -309,7 +309,7 @@ export default function GlobalSearch() {
           <div className="p-8 text-center">
             <div className="text-gray-400 text-4xl mb-2">🔍</div>
             <div className="text-sm text-gray-600 mb-1">快速搜索无结果</div>
-            <div className="text-xs text-gray-400">点击上方"去搜索页"查看完整搜索</div>
+            <div className="text-xs text-gray-400">点击上方&ldquo;去搜索页&rdquo;查看完整搜索</div>
           </div>
         </div>
       )}

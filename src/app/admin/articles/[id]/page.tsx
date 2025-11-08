@@ -227,7 +227,6 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
                 folder="articles"
                 label=""
                 description="推荐尺寸：1200x630px"
-                buttonText="上传封面图"
               />
             </div>
 

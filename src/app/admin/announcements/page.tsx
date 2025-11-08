@@ -264,15 +264,15 @@ export default function AnnouncementsPage() {
 
       {/* 删除确认对话框 */}
       <ConfirmDialog
-        open={deleteDialog.open}
+        isOpen={deleteDialog.open}
+        onClose={() => setDeleteDialog({ open: false, id: null })}
+        onConfirm={handleDelete}
         title="删除公告"
         message="确定要删除这条公告吗？此操作无法撤销。"
         confirmText="删除"
         cancelText="取消"
-        onConfirm={handleDelete}
-        onCancel={() => setDeleteDialog({ open: false, id: null })}
+        type="danger"
         loading={deleteLoading}
-        danger
       />
     </AdminLayout>
   )

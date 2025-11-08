@@ -41,12 +41,14 @@ interface Article {
 
 export default function ArticlesPage() {
   const [activeCategory, setActiveCategory] = useState('all')
-  const [isLoading, setIsLoading] = useState(true) // ✅ 每次都显示骨架屏（符合用户期望）
+  const [activeTag, setActiveTag] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
   const [categories, setCategories] = useState<ArticleCategory[]>([])
   const [articles, setArticles] = useState<Article[]>([])
-  const [allArticles, setAllArticles] = useState<Article[]>([]) // 保存所有文章用于搜索
+  const [allArticles, setAllArticles] = useState<Article[]>([])
   const [tags, setTags] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [featuredStartIndex, setFeaturedStartIndex] = useState(0) // 推荐文章轮播起始索引
 
   // 获取数据
   useEffect(() => {
@@ -86,8 +88,8 @@ export default function ArticlesPage() {
   // 分类切换处理
   const handleCategoryChange = async (categorySlug: string) => {
     setActiveCategory(categorySlug)
+    setActiveTag('') // 清空标签筛选
     setSearchQuery('') // 清空搜索
-    // 不显示骨架屏，直接切换
     
     try {
       const url = categorySlug === 'all' 
@@ -99,11 +101,30 @@ export default function ArticlesPage() {
       
       if (data.success) {
         setArticles(data.data)
-        setAllArticles(data.data) // 更新所有文章列表
+        setAllArticles(data.data)
       }
     } catch (error) {
       console.error('获取文章失败:', error)
     }
+  }
+
+  // 标签筛选处理
+  const handleTagChange = (tagSlug: string) => {
+    setActiveTag(tagSlug)
+    setSearchQuery('') // 清空搜索
+    
+    if (!tagSlug) {
+      // 清除标签筛选，恢复所有文章
+      setArticles(allArticles)
+      return
+    }
+
+    // 前端过滤：只显示包含该标签的文章
+    const filtered = allArticles.filter(article => 
+      article.tags.some(tag => tag.slug === tagSlug)
+    )
+    
+    setArticles(filtered)
   }
 
   // 搜索处理
@@ -111,13 +132,21 @@ export default function ArticlesPage() {
     setSearchQuery(query)
     
     if (!query.trim()) {
-      // 如果搜索框为空，恢复当前分类的所有文章
-      setArticles(allArticles)
+      // 如果搜索框为空，根据当前标签筛选状态恢复文章
+      if (activeTag) {
+        handleTagChange(activeTag)
+      } else {
+        setArticles(allArticles)
+      }
       return
     }
 
     // 前端过滤搜索
-    const filtered = allArticles.filter(article => 
+    const baseArticles = activeTag 
+      ? allArticles.filter(article => article.tags.some(tag => tag.slug === activeTag))
+      : allArticles
+
+    const filtered = baseArticles.filter(article => 
       article.title.toLowerCase().includes(query.toLowerCase()) ||
       article.description?.toLowerCase().includes(query.toLowerCase()) ||
       article.tags.some(tag => tag.name.toLowerCase().includes(query.toLowerCase()))
@@ -129,133 +158,206 @@ export default function ArticlesPage() {
   // 获取当前分类信息
   const currentCategory = categories.find(c => c.slug === activeCategory)
 
-  // 精选文章（限制10条）
-  const featuredArticles = articles.filter(a => a.isFeatured).slice(0, 10)
+  // 精选文章处理
+  const allFeaturedArticles = articles.filter(a => a.isFeatured)
+  const featuredArticles = allFeaturedArticles.slice(featuredStartIndex, featuredStartIndex + 5)
+  
+  // 推荐文章轮播控制
+  const handleFeaturedPrev = () => {
+    setFeaturedStartIndex(prev => Math.max(0, prev - 5))
+  }
+  
+  const handleFeaturedNext = () => {
+    setFeaturedStartIndex(prev => 
+      prev + 5 < allFeaturedArticles.length ? prev + 5 : prev
+    )
+  }
+  
+  const canGoPrev = featuredStartIndex > 0
+  const canGoNext = featuredStartIndex + 5 < allFeaturedArticles.length
 
-  // 页面头部
+  // 页面头部 - 推荐阅读Hero区域
   const header = (
-    <div className="bg-gray-50 py-6">
-      <div className="container mx-auto px-6">
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <div className="grid grid-cols-2 gap-6">
-            {/* 左侧：搜索区 */}
-            <div>
-              <div className="mb-4">
-                <h1 className="text-2xl font-bold text-gray-900">资讯中心</h1>
-                <p className="text-sm text-gray-500 mt-1">共 {articles.length} 篇优质文章</p>
-              </div>
+    <section 
+      className="pt-12 pb-8 relative overflow-hidden"
+      style={{
+        backgroundImage: `
+          repeating-linear-gradient(0deg, rgba(99,102,241,0.03) 0px, rgba(99,102,241,0.03) 1px, transparent 1px, transparent 40px),
+          repeating-linear-gradient(90deg, rgba(99,102,241,0.03) 0px, rgba(99,102,241,0.03) 1px, transparent 1px, transparent 40px)
+        `,
+      }}
+    >
+      {/* 装饰性渐变光效 */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-100/20 rounded-full blur-3xl -z-10"></div>
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-100/20 rounded-full blur-3xl -z-10"></div>
 
-              {/* 搜索框 */}
-              <div className="relative mb-4">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  placeholder="搜索文章标题、标签或内容..."
-                  className="w-full px-4 py-2.5 pl-10 pr-10 bg-gray-50 border-2 border-gray-100 rounded-xl text-sm 
-                    focus:outline-none focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10
-                    transition-all duration-300 ease-out placeholder:text-gray-400"
-                />
-                <svg
-                  className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
+      <div className="container mx-auto px-6 relative">
+        <div className="max-w-6xl mx-auto">
+          {/* 手风琴式推荐文章 - 带轮播控制 */}
+          <div className="relative">
+            {/* 左侧切换按钮 */}
+            {canGoPrev && (
+              <button
+                onClick={handleFeaturedPrev}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 z-20 w-12 h-12 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center text-gray-600 hover:text-indigo-600 hover:scale-110"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                 </svg>
-                {/* 清除按钮 */}
-                {searchQuery && (
-                  <button
-                    onClick={() => handleSearch('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full transition-colors"
-                  >
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
-              </div>
+              </button>
+            )}
 
-              {/* 标签云 */}
-              <div>
-                <span className="text-xs text-gray-500 mb-2 block">热门标签</span>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {tags.map((tag) => (
+            {/* 右侧切换按钮 */}
+            {canGoNext && (
+              <button
+                onClick={handleFeaturedNext}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 z-20 w-12 h-12 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center text-gray-600 hover:text-indigo-600 hover:scale-110"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
+
+            {/* 手风琴卡片区域 */}
+            <div className="flex gap-3 h-80">
+            {featuredArticles.slice(0, 5).map((article, index) => (
+              <a
+                key={article.slug}
+                href={`/posts/${article.slug}`}
+                className="group relative flex-1 hover:flex-[3] bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 ease-out border border-gray-200 hover:border-indigo-300"
+                style={{
+                  backgroundImage: article.coverImage ? `url(${article.coverImage})` : 'none',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              >
+                {/* 渐变遮罩 */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20 group-hover:from-black/80 group-hover:via-black/40 group-hover:to-transparent transition-all duration-500"></div>
+
+                {/* 排名角标 */}
+                <div className={`absolute top-4 left-4 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-xl z-10 ${
+                  index === 0 
+                    ? 'bg-gradient-to-br from-red-500 to-orange-500' 
+                    : index === 1
+                    ? 'bg-gradient-to-br from-orange-500 to-yellow-500'
+                    : index === 2
+                    ? 'bg-gradient-to-br from-blue-500 to-cyan-500'
+                    : 'bg-gradient-to-br from-purple-500 to-pink-500'
+                }`}>
+                  {index + 1}
+                </div>
+
+                {/* 收起状态：排名+分类图标 */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 group-hover:opacity-0 group-hover:pointer-events-none transition-all duration-500 z-10">
+                  {/* 大号分类图标 */}
+                  <div className="text-6xl opacity-90 transform group-hover:scale-110 transition-transform duration-300">
+                    {article.category.icon}
+                  </div>
+                  {/* 分类名称 */}
+                  <div className="text-white font-bold text-lg tracking-wide">
+                    {article.category.name}
+                  </div>
+                  {/* 装饰线 */}
+                  <div className="w-12 h-0.5 bg-white/40"></div>
+                  {/* 简要信息 */}
+                  <div className="flex items-center gap-3 text-white/80 text-sm">
+                    <span className="flex items-center gap-1">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      {article.views}
+                    </span>
+                    <span>·</span>
+                    <span>{article.readTime}分钟</span>
+                  </div>
+                </div>
+
+                {/* 展开状态：完整内容 */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-500 z-10">
+                  <div className="h-full flex flex-col justify-end p-6">
+                    {/* 分类标签 */}
+                    <div className="mb-3">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-medium text-white border border-white/30">
+                        <span>{article.category.icon}</span>
+                        <span>{article.category.name}</span>
+                      </span>
+                    </div>
+
+                    {/* 标题 */}
+                    <h3 className="font-bold text-white text-2xl mb-3 line-clamp-2">
+                      {article.title}
+                    </h3>
+
+                    {/* 描述 */}
+                    <p className="text-sm text-gray-200 line-clamp-2 mb-4">
+                      {article.description || '点击查看详情...'}
+                    </p>
+
+                    {/* 元信息 */}
+                    <div className="flex items-center gap-4 text-xs text-gray-300 mb-4">
+                      <span className="flex items-center gap-1">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        {article.views}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {article.readTime}分钟
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        {article.author}
+                      </span>
+                    </div>
+
+                    {/* 阅读按钮 */}
+                    <div>
+                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm transition-colors">
+                        <span>立即阅读</span>
+                        <svg className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            ))}
+            </div>
+
+            {/* 页面指示器 */}
+            {allFeaturedArticles.length > 5 && (
+              <div className="flex items-center justify-center gap-2 mt-6">
+                <span className="text-sm text-gray-500">
+                  {featuredStartIndex + 1}-{Math.min(featuredStartIndex + 5, allFeaturedArticles.length)} / {allFeaturedArticles.length}
+                </span>
+                <div className="flex gap-1.5 ml-2">
+                  {Array.from({ length: Math.ceil(allFeaturedArticles.length / 5) }).map((_, i) => (
                     <button
-                      key={tag.slug}
-                      className="px-3 py-1.5 text-xs text-gray-600 bg-gray-50 rounded-lg hover:bg-blue-50 hover:text-blue-600 border border-gray-100 hover:border-blue-200 transition-all"
-                    >
-                      {tag.name}
-                    </button>
+                      key={i}
+                      onClick={() => setFeaturedStartIndex(i * 5)}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        Math.floor(featuredStartIndex / 5) === i
+                          ? 'bg-indigo-600 w-6'
+                          : 'bg-gray-300 hover:bg-gray-400'
+                      }`}
+                    />
                   ))}
                 </div>
               </div>
-            </div>
-
-            {/* 右侧：推荐文章 */}
-            <div className="border-l border-gray-100 pl-6">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-bold text-gray-900">🔥 推荐阅读</h2>
-                <a 
-                  href="/articles" 
-                  className="px-3 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-all duration-300 ease-out hover:shadow-sm"
-                >
-                  查看更多 →
-                </a>
-              </div>
-
-              {/* 双列布局 */}
-              <div className="grid grid-cols-2 gap-2">
-                {featuredArticles.map((article, index) => (
-                  <a
-                    key={article.slug}
-                    href={`/posts/${article.slug}`}
-                    className="block group"
-                  >
-                    <div className="flex items-start gap-2 p-2 rounded-lg hover:bg-gray-50 active:scale-[0.98] transition-all duration-300 ease-out">
-                      {/* 序号标识 */}
-                      <div className={`flex-shrink-0 w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold ${
-                        index === 0 
-                          ? 'bg-gradient-to-br from-red-500 to-orange-500 text-white' 
-                          : index === 1
-                          ? 'bg-gradient-to-br from-orange-500 to-yellow-500 text-white'
-                          : index === 2
-                          ? 'bg-gradient-to-br from-blue-500 to-cyan-500 text-white'
-                          : 'bg-gray-200 text-gray-600'
-                      }`}>
-                        {index + 1}
-                      </div>
-
-                      {/* 文章信息 */}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-xs font-medium text-gray-900 line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors duration-300">
-                          {article.title}
-                        </h3>
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <span className="flex items-center gap-0.5 text-[10px] text-gray-400">
-                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            {article.views}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
-    </div>
+    </section>
   )
 
   return (
@@ -291,6 +393,9 @@ export default function ArticlesPage() {
             categories={categories}
             activeCategory={activeCategory}
             onCategoryChange={handleCategoryChange}
+            tags={tags}
+            activeTag={activeTag}
+            onTagChange={handleTagChange}
           />
         )
       }

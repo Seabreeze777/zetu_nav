@@ -391,7 +391,7 @@ export default function FloatingButtonsPage() {
               {buttons.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                    暂无数据，点击"添加按钮"创建
+                    暂无数据，点击&ldquo;添加按钮&rdquo;创建
                   </td>
                 </tr>
               )}

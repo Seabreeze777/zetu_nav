@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/auth'
-import { uploadToCOS, generateUniqueFileName } from '@/lib/cos'
+import { uploadToCOS } from '@/lib/cos'
 
 /**
  * POST /api/upload
@@ -46,7 +46,10 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer)
 
     // 生成唯一文件名
-    const uniqueFileName = generateUniqueFileName(file.name)
+    const timestamp = Date.now()
+    const randomString = Math.random().toString(36).substring(2, 15)
+    const ext = file.name.split('.').pop()
+    const uniqueFileName = `${timestamp}-${randomString}.${ext}`
     const key = `${folder}/${uniqueFileName}`
 
     // 上传到COS

@@ -303,7 +303,7 @@ export default function NavigationMenusPage() {
           <div className="p-6">
             {menus.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
-                暂无菜单，点击"添加菜单"创建
+                暂无菜单，点击&ldquo;添加菜单&rdquo;创建
               </div>
             ) : (
               <div className="space-y-4">
