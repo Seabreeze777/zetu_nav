@@ -165,7 +165,8 @@ function extractHeadings(content: string) {
   const headings: Array<{ level: number; text: string; id: string }> = []
   
   lines.forEach((line) => {
-    const match = line.match(/^(#{1,3})\s+(.+)$/)
+    // ✅ 匹配所有级别的标题（# 到 ######，即1-6级）
+    const match = line.match(/^(#{1,6})\s+(.+)$/)
     if (match) {
       const level = match[1].length
       let text = match[2]

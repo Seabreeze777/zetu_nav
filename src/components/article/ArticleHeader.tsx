@@ -12,20 +12,7 @@ export default function ArticleHeader({ article }: { article: Article }) {
   return (
     <header className="mb-8">
       {/* 顶部工具栏 */}
-      <div className="flex items-center justify-between mb-6">
-        {/* 面包屑导航 */}
-        <nav className="flex items-center gap-2 text-sm text-gray-600">
-          <Link href="/" className="hover:text-blue-600 transition-colors">
-            首页
-          </Link>
-          <span>/</span>
-          <Link href="/articles" className="hover:text-blue-600 transition-colors">
-            文章
-          </Link>
-          <span>/</span>
-          <span className="text-gray-400">{article.categoryName}</span>
-        </nav>
-
+      <div className="flex items-center justify-end mb-6">
         {/* ✅ 实用工具按钮：收藏、分享 */}
         <ArticleActions articleId={article.id} articleTitle={article.title} />
       </div>

@@ -19,17 +19,28 @@ export default function ArticleTOC({ headings }: { headings: Heading[] }) {
   useEffect(() => {
     // 滚动监听，自动高亮当前章节
     const handleScroll = () => {
-      const scrollY = window.scrollY + 100
+      // ✅ 使用视口顶部偏移200px作为基准线
+      const scrollY = window.scrollY + 200
 
-      for (let i = headings.length - 1; i >= 0; i--) {
+      // ✅ 从上往下找第一个还没滚动过的标题
+      let currentId = headings[0]?.id || ''
+      
+      for (let i = 0; i < headings.length; i++) {
         const heading = headings[i]
         const element = document.getElementById(heading.id)
         
-        if (element && element.offsetTop <= scrollY) {
-          setActiveId(heading.id)
-          break
+        if (element) {
+          // 如果标题已经滚动过了基准线，就是当前标题
+          if (element.offsetTop <= scrollY) {
+            currentId = heading.id
+          } else {
+            // 一旦遇到还没滚动到的标题，就停止
+            break
+          }
         }
       }
+      
+      setActiveId(currentId)
     }
 
     handleScroll()
@@ -48,7 +59,7 @@ export default function ArticleTOC({ headings }: { headings: Heading[] }) {
   }
 
   return (
-    <div className="w-64 flex-shrink-0">
+    <div className="w-56 flex-shrink-0">
       <div className="sticky top-24">
         <div className="bg-white rounded-xl shadow-sm p-4">
           <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -63,11 +74,15 @@ export default function ArticleTOC({ headings }: { headings: Heading[] }) {
               <button
                 key={heading.id}
                 onClick={() => handleClick(heading.id)}
-                className={`block w-full text-left text-sm transition-all ${
+                className={`block w-full text-left text-sm transition-colors whitespace-normal break-words leading-relaxed py-1 ${
                   activeId === heading.id
-                    ? 'text-blue-600 font-medium'
+                    ? 'text-blue-600'
                     : 'text-gray-600 hover:text-gray-900'
-                } ${heading.level === 3 ? 'pl-4' : ''}`}
+                } ${heading.level === 2 ? 'pl-0' : ''} ${heading.level === 3 ? 'pl-3' : ''} ${heading.level >= 4 ? 'pl-6' : ''}`}
+                style={{ 
+                  wordBreak: 'break-word', 
+                  overflowWrap: 'break-word'
+                }}
               >
                 {heading.text}
               </button>
