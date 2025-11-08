@@ -20,17 +20,26 @@ interface Tag {
   slug: string
 }
 
+interface Article {
+  id: number
+  title: string
+  slug: string
+}
+
 export default function NewWebsitePage() {
   const router = useRouter()
   const toast = useToast()
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
   const [tags, setTags] = useState<Tag[]>([])
+  const [articles, setArticles] = useState<Article[]>([])
   
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     url: '',
+    linkType: 'url' as 'url' | 'article',
+    articleId: null as number | null,
     logoUrl: '',
     categoryId: 0,
     sortOrder: 0,
@@ -62,6 +71,13 @@ export default function NewWebsitePage() {
       const tagsData = await tagsRes.json()
       if (tagsData.success) {
         setTags(tagsData.data)
+      }
+
+      // 获取已发布的文章列表
+      const articlesRes = await fetch('/api/articles?pageSize=100')
+      const articlesData = await articlesRes.json()
+      if (articlesData.success) {
+        setArticles(articlesData.data)
       }
     } catch (error) {
       console.error('获取数据失败:', error)
@@ -124,8 +140,8 @@ export default function NewWebsitePage() {
         <div className="max-w-6xl mx-auto mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">添加网站</h1>
-              <p className="text-sm text-gray-500 mt-1">填写网站信息并提交</p>
+              <h1 className="text-2xl font-bold text-gray-900">添加导航</h1>
+              <p className="text-sm text-gray-500 mt-1">填写导航信息并提交</p>
             </div>
             <button
               type="button"
@@ -174,17 +190,67 @@ export default function NewWebsitePage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                网站链接 <span className="text-red-500">*</span>
+                跳转类型 <span className="text-red-500">*</span>
               </label>
-              <input
-                type="url"
-                required
-                value={formData.url}
-                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="https://github.com"
-              />
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    value="url"
+                    checked={formData.linkType === 'url'}
+                    onChange={(e) => setFormData({ ...formData, linkType: 'url', articleId: null })}
+                    className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">外部链接</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    value="article"
+                    checked={formData.linkType === 'article'}
+                    onChange={(e) => setFormData({ ...formData, linkType: 'article', url: '' })}
+                    className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">跳转到文章</span>
+                </label>
+              </div>
             </div>
+
+            {formData.linkType === 'url' ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  网站链接 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="url"
+                  required={formData.linkType === 'url'}
+                  value={formData.url}
+                  onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="https://github.com"
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  选择文章 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  required={formData.linkType === 'article'}
+                  value={formData.articleId || ''}
+                  onChange={(e) => setFormData({ ...formData, articleId: parseInt(e.target.value) || null })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="">请选择文章</option>
+                  {articles.map((article) => (
+                    <option key={article.id} value={article.id}>
+                      {article.title}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">点击该导航将跳转到选中的文章详情页</p>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -371,7 +437,7 @@ export default function NewWebsitePage() {
               disabled={loading}
               className="px-8 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm"
             >
-              {loading ? '提交中...' : '✨ 添加网站'}
+              {loading ? '提交中...' : '✨ 添加导航'}
             </button>
           </div>
         </form>

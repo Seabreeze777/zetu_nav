@@ -42,7 +42,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       name: '内容管理',
       icon: '📝',
       items: [
-        { name: '网站管理', icon: '🌐', href: '/admin/websites' },
+        { name: '导航管理', icon: '🌐', href: '/admin/websites' },
         { name: '文章管理', icon: '📝', href: '/admin/articles' },
         { name: '分类管理', icon: '📂', href: '/admin/categories' },
         { name: '标签管理', icon: '🏷️', href: '/admin/tags' },

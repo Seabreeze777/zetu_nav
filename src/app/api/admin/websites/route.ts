@@ -92,7 +92,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { name, description, url, logoUrl, categoryId, tagIds, isActive, sortOrder, actionButtons } = body
+    const { name, description, url, logoUrl, categoryId, tagIds, isActive, sortOrder, actionButtons, linkType, articleId } = body
 
     // 创建网站
     const website = await prisma.website.create({
@@ -105,6 +105,8 @@ export async function POST(request: Request) {
         isActive: isActive ?? true,
         sortOrder: sortOrder ?? 0,
         actionButtons: actionButtons || [],
+        linkType: linkType || 'url',
+        articleId: articleId || null,
         tags: {
           create: tagIds?.map((tagId: number) => ({
             tag: { connect: { id: tagId } }

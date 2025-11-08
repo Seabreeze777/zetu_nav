@@ -17,6 +17,8 @@ interface Website {
   logoUrl: string | null
   clickCount: number
   isActive: boolean
+  linkType: string
+  articleId: number | null
   category: {
     name: string
     slug: string
@@ -128,15 +130,15 @@ export default function WebsitesPage() {
           {/* 页面标题和操作栏 */}
           <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">网站管理</h1>
-            <p className="text-gray-600 mt-1">共 {websites.length} 个网站</p>
+            <h1 className="text-2xl font-bold text-gray-900">导航管理</h1>
+            <p className="text-gray-600 mt-1">共 {websites.length} 条导航</p>
           </div>
           <Link
             href="/admin/websites/new"
             className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-medium hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0"
           >
             <span>➕</span>
-            <span>添加网站</span>
+            <span>添加导航</span>
           </Link>
         </div>
 
@@ -147,7 +149,7 @@ export default function WebsitesPage() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="搜索网站名称、描述或链接..."
+              placeholder="搜索导航名称、描述或链接..."
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
             <svg
@@ -170,7 +172,7 @@ export default function WebsitesPage() {
             </div>
           ) : filteredWebsites.length === 0 ? (
             <div className="p-8 text-center">
-              <p className="text-gray-500">暂无网站数据</p>
+              <p className="text-gray-500">暂无导航数据</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -178,7 +180,10 @@ export default function WebsitesPage() {
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      网站
+                      导航
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      类型
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       分类
@@ -216,6 +221,15 @@ export default function WebsitesPage() {
                             <p className="text-xs text-gray-500 truncate">{site.url}</p>
                           </div>
                         </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 text-xs rounded-lg ${
+                          site.linkType === 'article' 
+                            ? 'bg-purple-50 text-purple-700' 
+                            : 'bg-green-50 text-green-700'
+                        }`}>
+                          {site.linkType === 'article' ? '📄 文章' : '🔗 链接'}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg">
@@ -280,8 +294,8 @@ export default function WebsitesPage() {
         isOpen={deleteDialog.isOpen}
         onClose={() => setDeleteDialog({ isOpen: false, id: 0, name: '' })}
         onConfirm={handleDelete}
-        title="确认删除网站"
-        message={`确定要删除网站"${deleteDialog.name}"吗？此操作不可恢复！`}
+        title="确认删除导航"
+        message={`确定要删除导航"${deleteDialog.name}"吗？此操作不可恢复！`}
         confirmText="删除"
         cancelText="取消"
         type="danger"

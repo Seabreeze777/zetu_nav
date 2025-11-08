@@ -38,7 +38,9 @@ model Website {
   categoryId    Int      @map("category_id")
   name          String   @db.VarChar(100)       // 网站名称
   description   String?  @db.VarChar(500)       // 网站描述
-  url           String   @db.VarChar(500)       // 网站链接
+  url           String   @db.VarChar(500)       // 网站链接（可以是外部链接或文章slug）
+  linkType      String   @default("url") @map("link_type") @db.VarChar(20) // 链接类型：url(外部链接)/article(文章)
+  articleId     Int?     @map("article_id")     // 关联的文章ID（linkType=article时使用）
   logoUrl       String?  @map("logo_url") @db.VarChar(500) // Logo图片URL（COS）
   actionButtons Json?    @map("action_buttons") // 扩展按钮配置 [{text: "公司介绍", url: "/about"}, ...]
   sortOrder     Int      @default(0)            // 排序
@@ -48,11 +50,13 @@ model Website {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  article     Article? @relation(fields: [articleId], references: [id], onDelete: SetNull)
   tags        WebsiteTag[]
   favorites   WebsiteFavorite[]
 
   @@map("websites")
   @@index([categoryId])
+  @@index([articleId])
   @@index([sortOrder])
   @@index([clickCount])
 }
@@ -98,6 +102,7 @@ model Article {
   category    ArticleCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   tags        ArticleTag[]
   favorites   ArticleFavorite[]
+  websites    Website[]  // 关联到此文章的网站导航
 
   @@map("articles")
   @@index([categoryId])

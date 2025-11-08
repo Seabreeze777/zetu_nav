@@ -34,6 +34,8 @@ interface Website {
   categoryId: number
   sortOrder: number
   isActive: boolean
+  linkType: string
+  articleId: number | null
   tags: Array<{
     tag: {
       id: number
@@ -43,6 +45,11 @@ interface Website {
   }>
 }
 
+interface Article {
+  id: number
+  title: string
+}
+
 export default function EditWebsitePage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const toast = useToast()
@@ -50,6 +57,7 @@ export default function EditWebsitePage({ params }: { params: { id: string } }) 
   const [submitting, setSubmitting] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
   const [tags, setTags] = useState<Tag[]>([])
+  const [articles, setArticles] = useState<Article[]>([])
   
   const [formData, setFormData] = useState({
     name: '',
@@ -59,6 +67,8 @@ export default function EditWebsitePage({ params }: { params: { id: string } }) 
     categoryId: 0,
     sortOrder: 0,
     isActive: true,
+    linkType: 'url',
+    articleId: null as number | null,
     tagIds: [] as number[],
     actionButtons: [] as ActionButton[],
   })
@@ -71,16 +81,18 @@ export default function EditWebsitePage({ params }: { params: { id: string } }) 
 
   const fetchData = async () => {
     try {
-      // 先获取分类和网站数据（并行加载）
-      const [categoriesRes, websiteRes, tagsRes] = await Promise.all([
+      // 先获取分类、网站、标签和文章数据（并行加载）
+      const [categoriesRes, websiteRes, tagsRes, articlesRes] = await Promise.all([
         fetch('/api/categories'),
         fetch(`/api/websites`),
-        fetch('/api/tags?limit=100')
+        fetch('/api/tags?limit=100'),
+        fetch('/api/articles?limit=1000&isPublished=true')
       ])
 
       const categoriesData = await categoriesRes.json()
       const websiteData = await websiteRes.json()
       const tagsData = await tagsRes.json()
+      const articlesData = await articlesRes.json()
 
       let loadedCategories: Category[] = []
       if (categoriesData.success) {
@@ -91,6 +103,10 @@ export default function EditWebsitePage({ params }: { params: { id: string } }) 
 
       if (tagsData.success) {
         setTags(tagsData.data)
+      }
+
+      if (articlesData.success) {
+        setArticles(articlesData.data)
       }
 
       if (websiteData.success) {
@@ -127,6 +143,8 @@ export default function EditWebsitePage({ params }: { params: { id: string } }) 
             categoryId: categoryId,
             sortOrder: website.sortOrder || 0,
             isActive: website.isActive,
+            linkType: website.linkType || 'url',
+            articleId: website.articleId || null,
             tagIds: website.tags.map((t: any) => t.tag?.id || t.id),
             actionButtons: website.actionButtons || [],
           })
@@ -145,8 +163,18 @@ export default function EditWebsitePage({ params }: { params: { id: string } }) 
     e.preventDefault()
     
     // 验证必填字段
-    if (!formData.name || !formData.url) {
-      toast.warning('请填写网站名称和链接')
+    if (!formData.name) {
+      toast.warning('请填写导航名称')
+      return
+    }
+    
+    if (formData.linkType === 'url' && !formData.url) {
+      toast.warning('请填写链接地址')
+      return
+    }
+    
+    if (formData.linkType === 'article' && !formData.articleId) {
+      toast.warning('请选择文章')
       return
     }
     
@@ -247,8 +275,8 @@ export default function EditWebsitePage({ params }: { params: { id: string } }) 
         <div className="max-w-6xl mx-auto mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">编辑网站</h1>
-              <p className="text-sm text-gray-500 mt-1">修改网站信息并保存</p>
+              <h1 className="text-2xl font-bold text-gray-900">编辑导航</h1>
+              <p className="text-sm text-gray-500 mt-1">修改导航信息并保存</p>
             </div>
             <button
               type="button"
@@ -270,11 +298,10 @@ export default function EditWebsitePage({ params }: { params: { id: string } }) 
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                网站名称 <span className="text-red-500">*</span>
+                导航名称 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -283,7 +310,7 @@ export default function EditWebsitePage({ params }: { params: { id: string } }) 
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                网站描述
+                导航描述
               </label>
               <textarea
                 value={formData.description}
@@ -295,20 +322,70 @@ export default function EditWebsitePage({ params }: { params: { id: string } }) 
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                网站链接 <span className="text-red-500">*</span>
+                链接类型 <span className="text-red-500">*</span>
               </label>
-              <input
-                type="url"
-                required
-                value={formData.url}
-                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              />
+              <div className="flex gap-4">
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="linkType"
+                    value="url"
+                    checked={formData.linkType === 'url'}
+                    onChange={(e) => setFormData({ ...formData, linkType: e.target.value })}
+                    className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">外部链接</span>
+                </label>
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="linkType"
+                    value="article"
+                    checked={formData.linkType === 'article'}
+                    onChange={(e) => setFormData({ ...formData, linkType: e.target.value })}
+                    className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">关联文章</span>
+                </label>
+              </div>
             </div>
+
+            {formData.linkType === 'url' ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  链接地址 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="url"
+                  value={formData.url}
+                  onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                  placeholder="https://..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  选择文章 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.articleId || ''}
+                  onChange={(e) => setFormData({ ...formData, articleId: e.target.value ? parseInt(e.target.value) : null })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="">请选择文章</option>
+                  {articles.map((article) => (
+                    <option key={article.id} value={article.id}>
+                      {article.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                网站 Logo
+                Logo
               </label>
               <MediaSelector
                 value={formData.logoUrl}

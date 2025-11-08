@@ -30,7 +30,7 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { name, description, url, logoUrl, categoryId, sortOrder, isActive, tagIds = [], actionButtons = [] } = body
+    const { name, description, url, logoUrl, categoryId, sortOrder, isActive, tagIds = [], actionButtons = [], linkType, articleId } = body
 
     console.log('📝 更新网站 ID:', websiteId)
     console.log('📦 收到的 actionButtons:', actionButtons)
@@ -54,6 +54,8 @@ export async function PUT(
           sortOrder,
           isActive,
           actionButtons: actionButtons || [],
+          linkType: linkType || 'url',
+          articleId: articleId || null,
         },
       })
 
