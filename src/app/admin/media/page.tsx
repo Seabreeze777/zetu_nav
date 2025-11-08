@@ -63,12 +63,17 @@ export default function MediaLibraryPage() {
   const [newFolderName, setNewFolderName] = useState('')
   const [editingFolder, setEditingFolder] = useState<string | null>(null)
   const [editFolderName, setEditFolderName] = useState('')
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0) // ✅ 记录上次加载时间
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // 加载媒体列表
+  // ✅ 加载媒体列表（添加缓存时间检查，5分钟内不重复加载）
   useEffect(() => {
-    fetchMedia()
-    fetchFolders()
+    const now = Date.now()
+    if (now - lastFetchTime > 5 * 60 * 1000) { // 5分钟
+      fetchMedia()
+      fetchFolders()
+      setLastFetchTime(now)
+    }
   }, [])
 
   const fetchMedia = async () => {
@@ -170,9 +175,10 @@ export default function MediaLibraryPage() {
       // 立即切换到"全部文件"（确保能看到新上传的文件）
       setSelectedFolder('all')
       
-      // 重新加载数据
+      // ✅ 重新加载数据并更新时间戳
       await fetchMedia()
       await fetchFolders()
+      setLastFetchTime(Date.now())
       
       toast.success(`成功上传 ${uploadedFiles.length} 个文件到"${targetFolder}"文件夹！`)
     } else {
@@ -803,7 +809,7 @@ export default function MediaLibraryPage() {
                       </p>
                       <ul className="text-sm text-gray-600 space-y-1 mb-3">
                         {Array.from(selectedFiles).slice(0, 3).map((file, i) => (
-                          <li key={i} className="truncate">{file.name}</li>
+                          <li key={`upload-file-${i}-${file.name}`} className="truncate">{file.name}</li>
                         ))}
                         {selectedFiles.length > 3 && (
                           <li className="text-gray-500">...还有 {selectedFiles.length - 3} 个文件</li>

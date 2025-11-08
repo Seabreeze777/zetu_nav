@@ -72,20 +72,27 @@ export default function MediaSelector({
   const [uploadFolder, setUploadFolder] = useState<string>(folder) // 上传时使用的文件夹
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [mediaCache, setMediaCache] = useState<Media[]>([]) // ✅ 添加缓存
   const fileInputRef = useRef<HTMLInputElement>(null)
   const toast = useToast()
 
-  // 加载文件夹（在打开对话框时加载，用于两个Tab）
+  // 加载文件夹（在打开对话框时加载）
   useEffect(() => {
     if (isOpen) {
       fetchFolders()
     }
   }, [isOpen])
 
-  // 加载媒体库
+  // ✅ 加载媒体库（切换到媒体库标签时加载，支持缓存）
   useEffect(() => {
     if (isOpen && activeTab === 'library') {
-      fetchMedia()
+      // 如果有缓存且不是搜索/筛选状态，使用缓存
+      if (mediaCache.length > 0 && !searchQuery && !selectedFolder) {
+        setMediaList(mediaCache)
+      } else {
+        // 否则重新加载
+        fetchMedia()
+      }
     }
   }, [isOpen, activeTab, searchQuery, selectedFolder])
 
@@ -105,13 +112,17 @@ export default function MediaSelector({
     setLoading(true)
     try {
       const params = new URLSearchParams()
-      if (selectedFolder) params.set('folder', selectedFolder) // 只在选择了特定文件夹时过滤
+      if (selectedFolder) params.set('folder', selectedFolder)
       if (searchQuery) params.set('search', searchQuery)
 
       const res = await fetch(`/api/admin/media?${params}`)
       const data = await res.json()
       if (data.success) {
         setMediaList(data.data)
+        // ✅ 更新缓存（仅在全部列表时）
+        if (!selectedFolder && !searchQuery) {
+          setMediaCache(data.data)
+        }
       }
     } catch (error) {
       console.error('获取媒体列表失败:', error)
@@ -144,6 +155,8 @@ export default function MediaSelector({
       if (data.success) {
         onChange(data.data.url)
         toast.success('上传成功！')
+        // ✅ 清除缓存，下次打开时重新加载
+        setMediaCache([])
         setIsOpen(false)
       } else {
         toast.error(`上传失败: ${data.error}`)
@@ -333,9 +346,9 @@ export default function MediaSelector({
                       onChange={(e) => setUploadFolder(e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     >
-                      <option value="uploads">默认文件夹 (uploads)</option>
-                      {folders.map((folder) => (
-                        <option key={folder.id} value={folder.name}>
+                      <option key="default-uploads" value="uploads">默认文件夹 (uploads)</option>
+                      {folders.map((folder, index) => (
+                        <option key={`upload-folder-${folder.id || folder.name || index}`} value={folder.name}>
                           {folder.name} {folder.description && `- ${folder.description}`}
                         </option>
                       ))}
@@ -395,6 +408,7 @@ export default function MediaSelector({
                     {/* 文件夹过滤 */}
                     <div className="flex gap-2 flex-wrap">
                       <button
+                        key="filter-all"
                         type="button"
                         onClick={() => setSelectedFolder('')}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -405,9 +419,9 @@ export default function MediaSelector({
                       >
                         全部 ({mediaList.length})
                       </button>
-                      {folders.map((folder) => (
+                      {folders.map((folder, index) => (
                         <button
-                          key={folder.id}
+                          key={`filter-folder-${folder.id || folder.name || index}`}
                           type="button"
                           onClick={() => setSelectedFolder(folder.name)}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -446,7 +460,7 @@ export default function MediaSelector({
                     <div className="grid grid-cols-5 gap-3">
                       {mediaList.map((media) => (
                         <div
-                          key={media.id}
+                          key={`media-item-${media.id}`}
                           onClick={() => handleSelectMedia(media)}
                           className="aspect-square rounded-lg border-2 border-gray-200 hover:border-indigo-500 overflow-hidden cursor-pointer transition-all hover:shadow-lg relative"
                         >

@@ -4,6 +4,63 @@ import { getCurrentUser } from '@/lib/auth'
 import { logCreate } from '@/lib/audit-log'
 
 /**
+ * GET /api/admin/articles
+ * 获取所有文章（包括未发布的）
+ */
+export async function GET() {
+  try {
+    // 验证登录
+    const currentUser = await getCurrentUser()
+    if (!currentUser) {
+      return NextResponse.json(
+        { success: false, error: '未登录' },
+        { status: 401 }
+      )
+    }
+
+    // 获取所有文章（包括草稿）
+    const articles = await prisma.article.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        category: {
+          select: {
+            name: true,
+            slug: true,
+          },
+        },
+        tags: {
+          include: {
+            tag: {
+              select: {
+                name: true,
+                slug: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    // 转换标签格式
+    const formattedArticles = articles.map(article => ({
+      ...article,
+      tags: article.tags.map(at => at.tag),
+    }))
+
+    return NextResponse.json({
+      success: true,
+      data: formattedArticles,
+    })
+  } catch (error) {
+    console.error('获取文章列表失败:', error)
+    return NextResponse.json(
+      { success: false, error: '获取文章列表失败' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
  * POST /api/admin/articles
  * 创建新文章
  */

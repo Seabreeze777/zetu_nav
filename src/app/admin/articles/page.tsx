@@ -45,8 +45,8 @@ export default function ArticlesAdminPage() {
 
   const fetchArticles = async () => {
     try {
-      // 获取所有文章（包括未发布的）
-      const res = await fetch('/api/articles?pageSize=100')
+      // 获取所有文章（包括未发布的）- 使用管理员API
+      const res = await fetch('/api/admin/articles')
       const data = await res.json()
       if (data.success) {
         setArticles(data.data)
@@ -229,33 +229,44 @@ export default function ArticlesAdminPage() {
                         <span className="text-sm text-gray-900">{article.views}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <LoadingButton
-                          onClick={() => handleTogglePublish(article.id, article.isPublished)}
-                          loading={publishingId === article.id}
-                          size="sm"
-                          variant={article.isPublished ? 'success' : 'secondary'}
-                        >
-                          {article.isPublished ? '✓ 已发布' : '✕ 草稿'}
-                        </LoadingButton>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => handleTogglePublish(article.id, article.isPublished)}
+                            disabled={publishingId === article.id}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                              article.isPublished ? 'bg-green-600' : 'bg-gray-300'
+                            }`}
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                article.isPublished ? 'translate-x-6' : 'translate-x-1'
+                              }`}
+                            />
+                          </button>
+                          <span className={`text-sm font-medium whitespace-nowrap ${article.isPublished ? 'text-green-700' : 'text-gray-500'}`}>
+                            {article.isPublished ? '已发布' : '草稿'}
+                          </span>
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             href={`/posts/${article.slug}`}
                             target="_blank"
-                            className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:shadow-sm transform hover:-translate-y-0.5"
+                            className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:shadow-sm transform hover:-translate-y-0.5 whitespace-nowrap"
                           >
                             预览
                           </Link>
                           <Link
                             href={`/admin/articles/${article.id}`}
-                            className="px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200 hover:shadow-sm transform hover:-translate-y-0.5"
+                            className="px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200 hover:shadow-sm transform hover:-translate-y-0.5 whitespace-nowrap"
                           >
                             编辑
                           </Link>
                           <button
                             onClick={() => openDeleteDialog(article.id, article.title)}
-                            className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 hover:shadow-sm transform hover:-translate-y-0.5"
+                            className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 hover:shadow-sm transform hover:-translate-y-0.5 whitespace-nowrap"
                           >
                             删除
                           </button>

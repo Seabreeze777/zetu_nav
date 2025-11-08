@@ -11,6 +11,7 @@ import ArticleTOC from '@/components/article/ArticleTOC'
 import RelatedPosts from '@/components/article/RelatedPosts'
 import Breadcrumb from '@/components/common/Breadcrumb'
 import { prisma } from '@/lib/prisma'
+import { slug as slugger } from 'github-slugger'
 
 // 生成静态路径
 export async function generateStaticParams() {
@@ -137,13 +138,17 @@ export default async function ArticlePage({ params }: { params: { slug: string }
 
       {/* 右侧：相关推荐 */}
       <aside className="hidden lg:block">
-        <RelatedPosts currentSlug={article.slug} category={article.category.slug} />
+        <RelatedPosts 
+          currentSlug={article.slug} 
+          category={article.category.slug}
+          relatedArticles={relatedArticles}
+        />
       </aside>
     </ArticleLayout>
   )
 }
 
-// 提取Markdown标题
+// 提取Markdown标题并清除markdown语法
 function extractHeadings(content: string) {
   const lines = content.split('\n')
   const headings: Array<{ level: number; text: string; id: string }> = []
@@ -152,8 +157,22 @@ function extractHeadings(content: string) {
     const match = line.match(/^(#{1,3})\s+(.+)$/)
     if (match) {
       const level = match[1].length
-      const text = match[2]
-      const id = text.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+      let text = match[2]
+      
+      // 清除markdown语法
+      text = text
+        .replace(/\*\*(.+?)\*\*/g, '$1')  // 粗体 **xxx**
+        .replace(/\*(.+?)\*/g, '$1')       // 斜体 *xxx*
+        .replace(/__(.+?)__/g, '$1')       // 粗体 __xxx__
+        .replace(/_(.+?)_/g, '$1')         // 斜体 _xxx_
+        .replace(/`(.+?)`/g, '$1')         // 代码 `xxx`
+        .replace(/\[(.+?)\]\(.+?\)/g, '$1') // 链接 [xxx](url)
+        .replace(/~~(.+?)~~/g, '$1')       // 删除线 ~~xxx~~
+        .trim()
+      
+      // 使用github-slugger生成ID，与rehype-slug保持一致
+      const id = slugger(text)
+      
       headings.push({ level, text, id })
     }
   })

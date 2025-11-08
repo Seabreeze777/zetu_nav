@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
-import MarkdownEditor from '@/components/admin/MarkdownEditor'
+import ToastUIEditor from '@/components/admin/ToastUIEditor'
 import MediaSelector from '@/components/admin/MediaSelector'
 import { useToast } from '@/contexts/ToastContext'
 
@@ -279,9 +279,14 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
           {/* 文章内容 */}
           <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
             <h2 className="text-lg font-bold text-gray-900">文章内容 <span className="text-red-500">*</span></h2>
-            <MarkdownEditor
+            <p className="text-sm text-gray-500">
+              💡 提示：支持Markdown语法，可以直接拖拽或粘贴图片到编辑器中上传
+            </p>
+            <ToastUIEditor
               value={formData.content}
               onChange={(content) => setFormData({ ...formData, content })}
+              placeholder="开始写作...支持 Markdown 语法，可直接拖拽图片上传"
+              height="600px"
             />
           </div>
 
@@ -309,25 +314,54 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
           {/* 发布选项 */}
           <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
             <h2 className="text-lg font-bold text-gray-900">发布选项</h2>
-            <div className="space-y-3">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.isFeatured}
-                  onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-                  className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
-                <span className="text-sm text-gray-700">⭐ 设为精选文章</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.isPublished}
-                  onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                  className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
-                <span className="text-sm text-gray-700">✅ 发布文章</span>
-              </label>
+            <div className="space-y-4">
+              {/* 设为精选 */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">⭐</span>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">设为精选文章</p>
+                    <p className="text-xs text-gray-500">显示在首页推荐区域</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, isFeatured: !formData.isFeatured })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+                    formData.isFeatured ? 'bg-indigo-600' : 'bg-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      formData.isFeatured ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* 发布文章 */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">✅</span>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">发布文章</p>
+                    <p className="text-xs text-gray-500">关闭则保存为草稿</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, isPublished: !formData.isPublished })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+                    formData.isPublished ? 'bg-green-600' : 'bg-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      formData.isPublished ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
           </div>
 

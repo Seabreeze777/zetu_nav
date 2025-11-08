@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    // 允许所有外部图片域名（解决403/404错误）
+    // 允许所有外部图片域名
     remotePatterns: [
       {
         protocol: 'https',
@@ -12,14 +12,11 @@ const nextConfig = {
         hostname: '**',
       },
     ],
-    // 图片加载失败时的处理
     dangerouslyAllowSVG: true,
-    contentDispositionType: 'attachment',
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    // 增加超时时间
-    minimumCacheTTL: 60,
-    // 禁用图片优化（避免外部图片403）
-    unoptimized: true,
+    // ✅ 图片缓存时间：7天（减少COS流量）
+    minimumCacheTTL: 604800,
+    // ⚠️ 开发环境禁用优化（避免加载问题），生产环境自动启用
+    unoptimized: process.env.NODE_ENV === 'development',
   },
 }
 

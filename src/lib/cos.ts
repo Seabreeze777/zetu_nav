@@ -104,17 +104,12 @@ export async function uploadToCOS(
           console.error('❌ COS上传失败:', err);
           reject(err);
         } else {
-          // 生成签名URL（私有读写模式）
-          const signedUrl = cos.getObjectUrl({
-            Bucket: bucket,
-            Region: region,
-            Key: key,
-            Sign: true,
-            Expires: 86400, // 24小时
-          });
+          // ✅ 生成公共访问URL（不带签名，永久有效）
+          // 格式：https://<bucket>.cos.<region>.myqcloud.com/<key>
+          const publicUrl = `https://${bucket}.cos.${region}.myqcloud.com/${key}`;
           
-          console.log('✅ COS上传成功，生成签名URL');
-          resolve({ key, url: signedUrl });
+          console.log('✅ COS上传成功，生成公共URL:', publicUrl);
+          resolve({ key, url: publicUrl });
         }
       }
     );
