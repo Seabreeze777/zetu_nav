@@ -52,9 +52,11 @@ export default function ImageWithFallback({
 }: ImageWithFallbackProps) {
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [retryCount, setRetryCount] = useState(0)
+  const [imageSrc, setImageSrc] = useState(src)
 
-  // 如果没有图片URL或加载失败，显示占位图
-  const shouldShowFallback = !src || error
+  // 如果没有图片URL或加载失败（重试3次后），显示占位图
+  const shouldShowFallback = !src || (error && retryCount >= 3)
 
   // 根据文本生成一个稳定的颜色索引
   const getGradientIndex = () => {
@@ -148,14 +150,29 @@ export default function ImageWithFallback({
         </div>
       )}
       <img
-        src={src}
+        src={imageSrc || src || ''}
         alt={alt}
         className="w-full h-full object-cover"
         loading={priority ? 'eager' : 'lazy'}
-        onLoad={() => setLoading(false)}
-        onError={() => {
-          setError(true)
+        onLoad={() => {
           setLoading(false)
+          setError(false)
+        }}
+        onError={() => {
+          // ✅ 自动重试机制：如果是 COS 签名 URL 过期，添加时间戳重试
+          if (retryCount < 3) {
+            console.warn(`图片加载失败，重试中... (${retryCount + 1}/3)`, src)
+            setTimeout(() => {
+              const newSrc = src + (src?.includes('?') ? '&' : '?') + `t=${Date.now()}`
+              setImageSrc(newSrc)
+              setRetryCount(prev => prev + 1)
+              setLoading(true)
+            }, 1000 * (retryCount + 1)) // 递增延迟：1s, 2s, 3s
+          } else {
+            console.error('图片加载失败（已重试3次）:', src)
+            setError(true)
+            setLoading(false)
+          }
         }}
       />
     </div>

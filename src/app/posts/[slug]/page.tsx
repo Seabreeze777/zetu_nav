@@ -12,6 +12,7 @@ import RelatedPosts from '@/components/article/RelatedPosts'
 import Breadcrumb from '@/components/common/Breadcrumb'
 import { prisma } from '@/lib/prisma'
 import { slug as slugger } from 'github-slugger'
+import { formatDateTime } from '@/lib/date-format'
 
 // 生成静态路径
 export async function generateStaticParams() {
@@ -83,7 +84,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
   }).catch(console.error)
 
   // 获取相关文章
-  const relatedArticles = await prisma.article.findMany({
+  const relatedArticlesRaw = await prisma.article.findMany({
     where: {
       categoryId: article.categoryId,
       isPublished: true,
@@ -104,14 +105,22 @@ export default async function ArticlePage({ params }: { params: { slug: string }
     },
   })
 
+  // ✅ 转换 Date 为 string
+  const relatedArticles = relatedArticlesRaw.map(article => ({
+    ...article,
+    publishedAt: article.publishedAt?.toISOString() || null,
+  }))
+
   // 提取目录（从Markdown内容中）
   const headings = extractHeadings(article.content)
 
   return (
     <ArticleLayout>
-      {/* 左侧：目录导航 */}
+      {/* 左侧：目录导航 - ✅ 悬浮定位 */}
       <aside className="hidden xl:block">
-        <ArticleTOC headings={headings} />
+        <div className="sticky top-20">
+          <ArticleTOC headings={headings} />
+        </div>
       </aside>
 
       {/* 中间：文章主体 */}
@@ -130,19 +139,21 @@ export default async function ArticlePage({ params }: { params: { slug: string }
             ...article,
             tags: article.tags.map(at => at.tag.name),
             category: article.category.name,
-            date: article.publishedAt?.toISOString() || '',
+            date: formatDateTime(article.publishedAt),
           } as any} 
         />
         <ArticleContent content={article.content} />
       </article>
 
-      {/* 右侧：相关推荐 */}
+      {/* 右侧：相关推荐 - ✅ 悬浮定位 */}
       <aside className="hidden lg:block">
-        <RelatedPosts 
-          currentSlug={article.slug} 
-          category={article.category.slug}
-          relatedArticles={relatedArticles}
-        />
+        <div className="sticky top-20">
+          <RelatedPosts 
+            currentSlug={article.slug} 
+            category={article.category.slug}
+            relatedArticles={relatedArticles}
+          />
+        </div>
       </aside>
     </ArticleLayout>
   )

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { HeroStyles } from '@/components/home/hero-styles'
 import AnnouncementBanner from '@/components/home/AnnouncementBanner'
 import WebsiteCard from '@/components/home/WebsiteCard'
@@ -56,6 +56,8 @@ export default function HomePage() {
   const [heroStyle, setHeroStyle] = useState('1') // Hero样式ID
   const [showAnnouncementBanner, setShowAnnouncementBanner] = useState(true) // 公告栏开关
   const [heroConfig, setHeroConfig] = useState<any>({}) // Hero样式配置
+  const isScrollingToSectionRef = useRef(false) // ✅ 使用 ref 确保立即生效，避免React状态更新延迟
+  const scrollTimerRef = useRef<NodeJS.Timeout | null>(null) // ✅ 存储定时器引用，用于清理
 
   // 获取数据
   useEffect(() => {
@@ -121,6 +123,9 @@ export default function HomePage() {
     if (categories.length === 0) return
 
     const handleScroll = () => {
+      // ✅ 如果正在点击跳转，不触发滚动监听（避免弹跳）
+      if (isScrollingToSectionRef.current) return
+      
       const THRESHOLD = 90
       
       const sectionPositions = categories.map((category) => {
@@ -173,12 +178,29 @@ export default function HomePage() {
   }, [categories])
 
   const handleCategoryClick = (categorySlug: string) => {
+    // ✅ 清除之前的定时器（如果快速点击）
+    if (scrollTimerRef.current) {
+      clearTimeout(scrollTimerRef.current)
+    }
+    
+    // ✅ 使用 ref 立即禁用滚动监听（不等待React渲染）
+    isScrollingToSectionRef.current = true
     setActiveCategory(categorySlug)
+    
     // 平滑滚动到对应分类
     const element = document.getElementById(`category-${categorySlug}`)
     if (element) {
       const top = element.getBoundingClientRect().top + window.scrollY - 80
       window.scrollTo({ top, behavior: 'smooth' })
+      
+      // ✅ 使用更长的延迟（1.5秒），确保滚动完全完成
+      scrollTimerRef.current = setTimeout(() => {
+        isScrollingToSectionRef.current = false
+        scrollTimerRef.current = null
+      }, 1500)
+    } else {
+      // 如果元素不存在，立即重新启用滚动监听
+      isScrollingToSectionRef.current = false
     }
   }
 

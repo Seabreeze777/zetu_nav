@@ -17,7 +17,7 @@ export interface JWTPayload {
 
 // 生成 JWT Token
 export function generateToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, {
+  return jwt.sign(payload, JWT_SECRET as string, {
     expiresIn: '7d', // 7天过期
   })
 }
@@ -25,7 +25,7 @@ export function generateToken(payload: JWTPayload): string {
 // 验证 JWT Token
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload
+    const decoded = jwt.verify(token, JWT_SECRET as string) as JWTPayload
     return decoded
   } catch (error) {
     return null

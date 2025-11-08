@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:analyze": "node scripts/build-analyze.js",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
@@ -13,7 +14,9 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "fix-images": "tsx scripts/fix-image-urls.ts",
+    "fix-dates": "tsx scripts/fix-published-dates.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -1,5 +1,8 @@
 'use client'
 
+// 强制动态渲染，跳过预渲染
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
@@ -86,7 +89,8 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
               readTime: fullArticle.readTime,
               isFeatured: fullArticle.isFeatured,
               isPublished: fullArticle.isPublished,
-              tagIds: fullArticle.tags.map((t: any) => t.id),
+              // ✅ 修复：从关联表中正确提取 tagId
+              tagIds: fullArticle.tags.map((t: any) => t.tagId || t.tag?.id || t.id).filter((id: number) => id != null),
             })
           }
         }
@@ -117,8 +121,47 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
     fetchData()
   }, [fetchData])
 
+  // ✅ 页面卸载时的额外清理
+  useEffect(() => {
+    return () => {
+      // 页面卸载时清理所有 TOAST UI Editor 相关的 DOM
+      const editorElements = document.querySelectorAll('.toastui-editor-defaultUI')
+      editorElements.forEach((el) => {
+        try {
+          el.remove()
+        } catch (e) {
+          // 忽略错误
+        }
+      })
+    }
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // ✅ 前端验证必填字段
+    if (!formData.title.trim()) {
+      toast.error('请输入文章标题')
+      return
+    }
+    
+    if (!formData.slug.trim()) {
+      toast.error('请输入 URL 别名')
+      return
+    }
+    
+    if (!formData.content.trim()) {
+      toast.error('请输入文章内容')
+      // 滚动到内容编辑器
+      document.querySelector('.toastui-editor')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
+    
+    if (!formData.categoryId) {
+      toast.error('请选择文章分类')
+      return
+    }
+
     setSubmitting(true)
 
     try {
@@ -132,7 +175,10 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
 
       if (data.success) {
         toast.success('文章更新成功！')
-        router.push('/admin/articles')
+        // ✅ 延迟跳转，等待编辑器清理完成
+        setTimeout(() => {
+          window.location.href = '/admin/articles'
+        }, 500)
       } else {
         toast.error('更新失败：' + data.error)
       }
@@ -184,7 +230,6 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
               </label>
               <input
                 type="text"
-                required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -197,7 +242,6 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
               </label>
               <input
                 type="text"
-                required
                 value={formData.slug}
                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm"
@@ -248,7 +292,6 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
                   所属分类 <span className="text-red-500">*</span>
                 </label>
                 <select
-                  required
                   value={formData.categoryId}
                   onChange={(e) => setFormData({ ...formData, categoryId: parseInt(e.target.value) })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -284,7 +327,7 @@ export default function EditArticlePage({ params }: { params: { id: string } }) 
             </p>
             <ToastUIEditor
               value={formData.content}
-              onChange={(content) => setFormData({ ...formData, content })}
+              onChange={(content) => setFormData(prev => ({ ...prev, content }))}
               placeholder="开始写作...支持 Markdown 语法，可直接拖拽图片上传"
               height="600px"
             />

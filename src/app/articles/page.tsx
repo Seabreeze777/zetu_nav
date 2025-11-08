@@ -5,6 +5,7 @@ import Pagination from '@/components/common/Pagination'
 import ArticleListLayout from '@/components/articles/ArticleListLayout'
 import ArticleFilter from '@/components/articles/ArticleFilter'
 import ArticleListCard from '@/components/articles/ArticleListCard'
+import { formatDateTime } from '@/lib/date-format'
 
 // 类型定义
 interface ArticleCategory {
@@ -49,6 +50,7 @@ export default function ArticlesPage() {
   const [tags, setTags] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [featuredStartIndex, setFeaturedStartIndex] = useState(0) // 推荐文章轮播起始索引
+  const [sortBy, setSortBy] = useState('latest') // ✅ 排序方式
 
   // 获取数据
   useEffect(() => {
@@ -65,8 +67,9 @@ export default function ArticlesPage() {
         const articlesRes = await fetch('/api/articles')
         const articlesData = await articlesRes.json()
         if (articlesData.success) {
-          setArticles(articlesData.data)
-          setAllArticles(articlesData.data) // 保存所有文章
+          const sortedData = sortArticles(articlesData.data, 'latest') // 默认最新发布排序
+          setArticles(sortedData)
+          setAllArticles(sortedData) // 保存所有文章
         }
 
         // 获取热门标签
@@ -85,6 +88,36 @@ export default function ArticlesPage() {
     fetchData()
   }, [])
 
+  // ✅ 排序处理函数
+  const sortArticles = (articlesData: Article[], sortType: string) => {
+    const sorted = [...articlesData]
+    
+    switch (sortType) {
+      case 'latest':
+        // 最新发布：按发布时间倒序
+        return sorted.sort((a, b) => {
+          const dateA = new Date(a.publishedAt || 0).getTime()
+          const dateB = new Date(b.publishedAt || 0).getTime()
+          return dateB - dateA
+        })
+      
+      case 'popular':
+        // 最受欢迎：按浏览量倒序
+        return sorted.sort((a, b) => b.views - a.views)
+      
+      case 'recommended':
+        // 精选推荐：精选文章在前，然后按浏览量排序
+        return sorted.sort((a, b) => {
+          if (a.isFeatured && !b.isFeatured) return -1
+          if (!a.isFeatured && b.isFeatured) return 1
+          return b.views - a.views
+        })
+      
+      default:
+        return sorted
+    }
+  }
+
   // 分类切换处理
   const handleCategoryChange = async (categorySlug: string) => {
     setActiveCategory(categorySlug)
@@ -100,8 +133,9 @@ export default function ArticlesPage() {
       const data = await res.json()
       
       if (data.success) {
-        setArticles(data.data)
-        setAllArticles(data.data)
+        const sortedData = sortArticles(data.data, sortBy)
+        setArticles(sortedData)
+        setAllArticles(sortedData)
       }
     } catch (error) {
       console.error('获取文章失败:', error)
@@ -114,8 +148,9 @@ export default function ArticlesPage() {
     setSearchQuery('') // 清空搜索
     
     if (!tagSlug) {
-      // 清除标签筛选，恢复所有文章
-      setArticles(allArticles)
+      // 清除标签筛选，恢复所有文章（应用当前排序）
+      const sorted = sortArticles(allArticles, sortBy)
+      setArticles(sorted)
       return
     }
 
@@ -124,7 +159,9 @@ export default function ArticlesPage() {
       article.tags.some(tag => tag.slug === tagSlug)
     )
     
-    setArticles(filtered)
+    // ✅ 应用排序
+    const sorted = sortArticles(filtered, sortBy)
+    setArticles(sorted)
   }
 
   // 搜索处理
@@ -136,7 +173,8 @@ export default function ArticlesPage() {
       if (activeTag) {
         handleTagChange(activeTag)
       } else {
-        setArticles(allArticles)
+        const sorted = sortArticles(allArticles, sortBy)
+        setArticles(sorted)
       }
       return
     }
@@ -152,7 +190,40 @@ export default function ArticlesPage() {
       article.tags.some(tag => tag.name.toLowerCase().includes(query.toLowerCase()))
     )
     
-    setArticles(filtered)
+    // ✅ 应用排序
+    const sorted = sortArticles(filtered, sortBy)
+    setArticles(sorted)
+  }
+
+  // ✅ 排序变化监听
+  useEffect(() => {
+    // 当排序方式改变时，重新排序当前显示的文章
+    // 使用 allArticles 作为基准，避免无限循环
+    let baseArticles = allArticles
+
+    // 如果有标签筛选
+    if (activeTag) {
+      baseArticles = allArticles.filter(article => 
+        article.tags.some(tag => tag.slug === activeTag)
+      )
+    }
+
+    // 如果有搜索
+    if (searchQuery.trim()) {
+      baseArticles = baseArticles.filter(article => 
+        article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        article.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        article.tags.some(tag => tag.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    }
+
+    const sorted = sortArticles(baseArticles, sortBy)
+    setArticles(sorted)
+  }, [sortBy, allArticles, activeTag, searchQuery])
+
+  // 排序切换处理
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value)
   }
 
   // 获取当前分类信息
@@ -414,7 +485,11 @@ export default function ArticlesPage() {
           {/* 排序下拉框 */}
           {!isLoading && (
             <div className="relative">
-              <select className="appearance-none px-4 py-2 pr-10 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:border-blue-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all cursor-pointer">
+              <select 
+                value={sortBy}
+                onChange={handleSortChange}
+                className="appearance-none px-4 py-2 pr-10 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:border-blue-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all cursor-pointer"
+              >
                 <option value="latest">最新发布</option>
                 <option value="popular">最受欢迎</option>
                 <option value="recommended">精选推荐</option>
@@ -468,7 +543,7 @@ export default function ArticlesPage() {
                 category={article.category.name}
                 tags={article.tags.map(t => t.name)}
                 author={article.author}
-                date={article.publishedAt || ''}
+                date={formatDateTime(article.publishedAt)}
                 readTime={`${article.readTime} 分钟`}
                 views={article.views}
               />

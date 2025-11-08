@@ -23,17 +23,24 @@ export default function ToastUIEditor({ value, onChange, placeholder, height = '
   const editorRef = useRef<HTMLDivElement>(null)
   const editorInstanceRef = useRef<any>(null)
   const isInitializedRef = useRef(false)
+  const isMountedRef = useRef(true)
 
   useEffect(() => {
+    isMountedRef.current = true
+    
     if (typeof window === 'undefined' || !editorRef.current || isInitializedRef.current) {
       return
     }
 
     // 动态导入 TOAST UI Editor（客户端渲染）
-    import('@toast-ui/editor').then(({ default: Editor }) => {
+    // @ts-ignore - 动态导入的类型声明问题
+    import('@toast-ui/editor').then(({ default: Editor }: any) => {
+      // @ts-ignore
       import('prismjs').then(() => {
-        import('@toast-ui/editor-plugin-code-syntax-highlight').then(({ default: codeSyntaxHighlight }) => {
-          if (!editorRef.current || editorInstanceRef.current) return
+        // @ts-ignore
+        import('@toast-ui/editor-plugin-code-syntax-highlight').then(({ default: codeSyntaxHighlight }: any) => {
+          // ✅ 检查组件是否还挂载
+          if (!isMountedRef.current || !editorRef.current || editorInstanceRef.current) return
 
           // 创建编辑器实例
           const editorInstance = new Editor({
@@ -90,18 +97,42 @@ export default function ToastUIEditor({ value, onChange, placeholder, height = '
             onChange(markdown)
           })
 
+          // ✅ 再次检查组件是否还挂载
+          if (!isMountedRef.current) {
+            editorInstance.destroy()
+            return
+          }
+
           editorInstanceRef.current = editorInstance
           isInitializedRef.current = true
         })
       })
     })
 
-    // 清理函数
+    // ✅ 清理函数：立即销毁编辑器
     return () => {
+      isMountedRef.current = false
+      isInitializedRef.current = false
+      
       if (editorInstanceRef.current) {
-        editorInstanceRef.current.destroy()
-        editorInstanceRef.current = null
-        isInitializedRef.current = false
+        try {
+          // ✅ 立即销毁，不延迟
+          const instance = editorInstanceRef.current
+          editorInstanceRef.current = null
+          
+          // 移除所有事件监听
+          try {
+            instance.off('change')
+          } catch (e) {
+            // 忽略错误
+          }
+          
+          // 销毁实例
+          instance.destroy()
+        } catch (error) {
+          // 忽略销毁错误，避免阻塞卸载
+          console.warn('编辑器销毁时出现警告（已忽略）:', error)
+        }
       }
     }
   }, [])

@@ -130,7 +130,7 @@ export default function TestComponentsPage() {
           setShowDialog(false)
           toast.success('操作已执行！')
         }}
-        onCancel={() => {
+        onClose={() => {
           setShowDialog(false)
           toast.info('操作已取消')
         }}

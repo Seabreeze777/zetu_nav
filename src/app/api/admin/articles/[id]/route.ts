@@ -36,9 +36,16 @@ export async function PATCH(
       where: { id: articleId },
     })
 
-    // 如果更新发布状态，同时更新发布时间
+    // ✅ 如果更新发布状态，智能更新发布时间
     if (body.isPublished !== undefined) {
-      body.publishedAt = body.isPublished ? new Date() : null
+      if (body.isPublished && !before?.isPublished) {
+        // 从未发布变为发布：设置为当前时间
+        body.publishedAt = new Date()
+      } else if (!body.isPublished) {
+        // 取消发布：设置为 null
+        body.publishedAt = null
+      }
+      // 如果已经发布过，保持原来的时间不变（不设置 publishedAt）
     }
 
     // 更新文章
@@ -198,6 +205,18 @@ export async function PUT(
       where: { id: articleId },
     })
 
+    // ✅ 计算 publishedAt：只在第一次发布时设置
+    let publishedAt: Date | null = before?.publishedAt || null
+    
+    if (isPublished && !before?.isPublished) {
+      // 从未发布变为发布：设置为当前时间
+      publishedAt = new Date()
+    } else if (!isPublished) {
+      // 取消发布：设置为 null
+      publishedAt = null
+    }
+    // 如果已经发布过，保持原来的时间不变
+
     // 更新文章和标签关系
     const article = await prisma.$transaction(async (tx) => {
       // 删除旧的标签关系
@@ -219,7 +238,7 @@ export async function PUT(
           readTime,
           isFeatured,
           isPublished,
-          publishedAt: isPublished ? new Date() : null,
+          publishedAt,
         },
       })
 
